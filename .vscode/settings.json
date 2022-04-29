@@ -1,0 +1,15 @@
+{
+  "python.pythonPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.analysis.completeFunctionParens": true,
+  "python.formatting.provider": "black",
+  "python.autoComplete.addBrackets": true,
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": [
+    "--max-line-length",
+    "100",
+  ],
+  "code-runner.ignoreSelection": true,
+  "python.terminal.activateEnvironment": true
+}
