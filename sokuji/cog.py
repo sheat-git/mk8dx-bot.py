@@ -9,5 +9,5 @@ class SokujiCog(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
-    async def start(messageable: Messageable, tags: list[str], format: int, locale: Locale = Locale.JA) -> Message:
-        return await Sokuji.start(tags=tags, format=format, locale=locale).send(messageable=messageable)
+    async def start(ctx: commands.Context, tags: list[str], format: int, locale: Locale = Locale.JA) -> Message:
+        return await Sokuji.start(tags=tags, format=format, locale=locale).send(messageable=ctx)

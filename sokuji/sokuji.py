@@ -5,7 +5,7 @@ from discord import Embed, Message
 from discord.abc import Messageable
 from datetime import datetime, timedelta
 from mk8dx import Mogi, Race, Rank, Track
-from .locale import Locale
+from ..locale import Locale
 
 
 async def find(messageable: Messageable, user_id: int) -> tuple[Optional[Sokuji], Optional[SubSokuji], Optional[Track]]:
