@@ -368,14 +368,16 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.command(
         name='table',
-        aliases=['result', 'r', 'tbl']
+        aliases=['result', 'r', 'tbl'],
+        brief='Generates table'
     )
     async def make_table(self, ctx):
         await self._send_table(ctx, ctx)
 
     @commands.command(
         name='sendTable',
-        aliases=['sd', 'st', 'send']
+        aliases=['sd', 'st', 'send'],
+        brief='Generates table and sends to the designated channel'
     )
     async def send_table(self, ctx: commands.Context):
         sender = None
