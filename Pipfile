@@ -4,11 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-py-cord = "*"
+py-cord = "==2.0.0b7"
 firebase-admin = "*"
 pillow = "*"
 matplotlib = "*"
-mk8dx = "*"
+mk8dx = "1.0"
 
 [dev-packages]
 black = "*"
