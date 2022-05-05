@@ -89,6 +89,14 @@ class ToolCog(commands.Cog, name='Tool'):
         inline=False
     )
     INSTRUCTION_PAGES_JA[0].add_field(
+        name='集計表',
+        value='```%table```'
+    )
+    INSTRUCTION_PAGES_JA[0].add_field(
+        name='集計表転送',
+        value='```%send #チャンネル```'
+    )
+    INSTRUCTION_PAGES_JA[0].add_field(
         name='コース情報',
         value='コース名のみのメッセージがあると、botがコースの選択場所とアイテムテーブルマップを送信。',
         inline=False
@@ -219,6 +227,14 @@ class ToolCog(commands.Cog, name='Tool'):
         name='Sokuji\'s Banner Overlay',
         value='```%banner```Sokuji can be reflected in the broadcast by setting the URL sent by this bot to the broadcast software such as OBS.',
         inline=False
+    )
+    INSTRUCTION_PAGES_EN[0].add_field(
+        name='Table (6v6 only)',
+        value='```%table```'
+    )
+    INSTRUCTION_PAGES_EN[0].add_field(
+        name='Send Table (6v6 only)',
+        value='```%send #channel```'
     )
     INSTRUCTION_PAGES_EN[0].add_field(
         name='Track Information',
