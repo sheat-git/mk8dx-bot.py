@@ -9,6 +9,7 @@ import mk8dx.lounge_api as la
 from mk8dx import Rank, Track
 from .sokuji import Sokuji, SubSokuji, find
 import sokuji.table as table
+from .tag import to_tag
 from locale_ import Locale
 
 
@@ -16,7 +17,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot: commands.Bot = bot
 
-    def validate_tags(self, tags: list[str], format: Optional[int]) -> tuple[list[str], int]:
+    def validate_tags(self, ctx: commands.Context, tags: list[str], format: Optional[int]) -> tuple[list[str], int]:
         if format is None:
             if len(tags) in {2, 3, 4, 6}:
                 format = 12 // len(tags)
@@ -25,7 +26,11 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             else:
                 format = 2
         if len(tags) < 12 // format:
-            tags = ['TEST_TAG', *tags]
+            if ctx.guild is not None:
+                tag = to_tag(ctx.guild.name)
+            else:
+                tag = ctx.author.display_name
+            tags = [tag, *tags]
             for i in range(12 // format - len(tags)):
                 tags.append(string.ascii_uppercase[i] * 2)
         elif len(tags) > 12 // format:
@@ -38,7 +43,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
                 'Please permit me to use external emojis. The display will be corrupted.\n'
                 '「外部の絵文字を使用する」権限をください。表示が崩れます。'
             ))
-        tags, format = self.validate_tags(tags=tags, format=format)
+        tags, format = self.validate_tags(ctx, tags=tags, format=format)
         locale = Locale.JA
         try:
             player = await asyncio.wait_for(la.get_player(discord_id=ctx.author.id), timeout=0.7)
