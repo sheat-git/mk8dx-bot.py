@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 py-cord = "*"
+firebase-admin = "*"
+pillow = "*"
+matplotlib = "*"
 mk8dx = "*"
 
 [dev-packages]
