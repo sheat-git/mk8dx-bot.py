@@ -47,7 +47,6 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         locale = Locale.JA
         try:
             player = await asyncio.wait_for(la.get_player(discord_id=ctx.author.id), timeout=0.7)
-            print(player.country_code)
             if player is not None and player.country_code is not None and player.country_code != 'JP':
                 locale = Locale.EN
         except (la.LoungeAPIError, asyncio.TimeoutError):
@@ -153,7 +152,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         if sokuji_message is None:
             return
         sokuji: Sokuji = sokuji_message.data
-        tags, _ = self.validate_tags(tags=tags, format=sokuji.format)
+        tags, _ = self.validate_tags(ctx, tags=tags, format=sokuji.format)
         sokuji.tags = tags
         await sokuji.edit(sokuji_message.message)
         if subsokuji_message is None:
