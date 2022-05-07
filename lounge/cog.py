@@ -70,18 +70,19 @@ class LoungeCog(commands.Cog, name='Lounge'):
         ctx: commands.Context,
         queries: list[Union[str, int]],
         items: list
-    ) -> list[Union[str, int]]:
+    ) -> list:
         none_queries = []
         for i in range(len(queries)):
             if items[i] is None:
-                items.pop(i)
                 none_queries.append(queries[i])
         if none_queries:
+            items = list(filter(lambda item: item is not None, items))
             content = 'Not Found: ' + ', '.join(map(
                 lambda q: f'<@!{q}>' if isinstance(q, int) else q,
                 none_queries
             ))
             await ctx.send(content)
+        return items
 
     @commands.command(
         name='mkc',
@@ -90,8 +91,11 @@ class LoungeCog(commands.Cog, name='Lounge'):
     )
     async def mkc(self, ctx: commands.Context, *, players_text: Optional[str]):
         queries = self.extract_queries(ctx=ctx, players_text=players_text)
-        players = await self.get_players(queries=queries)
-        await self.filter_not_found(ctx=ctx, queries=queries, items=players)
+        players = await self.filter_not_found(
+            ctx=ctx,
+            queries=queries,
+            items=await self.get_players(queries=queries)
+        )
         if not players:
             return
         if len(players) > 25:
@@ -113,8 +117,11 @@ class LoungeCog(commands.Cog, name='Lounge'):
     )
     async def fc(self, ctx: commands.Context, *, players_text: Optional[str]):
         queries = self.extract_queries(ctx=ctx, players_text=players_text)
-        players = await self.get_players(queries=queries)
-        await self.filter_not_found(ctx=ctx, queries=queries, items=players)
+        players = await self.filter_not_found(
+            ctx=ctx,
+            queries=queries,
+            items=await self.get_players(queries=queries)
+        )
         if not players:
             return
         if len(players) > 25:
@@ -134,8 +141,11 @@ class LoungeCog(commands.Cog, name='Lounge'):
 
     async def _mmr(self, ctx: commands.Context, players_text: Optional[str], season: Optional[int] = None):
         queries = self.extract_queries(ctx=ctx, players_text=players_text)
-        players = await self.get_players(queries=queries, season=season)
-        await self.filter_not_found(ctx=ctx, queries=queries, items=players)
+        players = await self.filter_not_found(
+            ctx=ctx,
+            queries=queries,
+            items=await self.get_players(queries=queries, season=season)
+        )
         if not players:
             return
         if len(players) > 24:
