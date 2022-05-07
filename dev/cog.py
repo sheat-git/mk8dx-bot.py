@@ -6,7 +6,7 @@ from discord import Embed
 from discord.ext import commands
 
 
-class DevCog(commands.Cog, name='Dev'):
+class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
     def __init__(self, bot: commands.Bot):
         self.bot: commands.Bot = bot
     
@@ -24,16 +24,14 @@ class DevCog(commands.Cog, name='Dev'):
     
     @commands.command(
         name='jsonM',
-        aliases=['j', 'jm', 'json', 'jsonm'],
-        hidden=True
+        aliases=['j', 'jm', 'json', 'jsonm']
     )
     async def embed_to_json_with_mid(self, ctx: commands.Context, message_id: int, embed_index: Optional[int] = 0):
         await self.embed_to_json(sender=ctx, fetcher=ctx, message_id=message_id, embed_index=embed_index)
 
     @commands.command(
         name='jsonC',
-        aliases=['jc', 'jsonc'],
-        hidden=True
+        aliases=['jc', 'jsonc']
     )
     async def embed_to_json_with_cid_and_mid(self, ctx: commands.Context, channel_id: int, message_id: int, embed_index: Optional[int] = 0):
         channel = self.bot.get_channel(channel_id)
@@ -43,8 +41,7 @@ class DevCog(commands.Cog, name='Dev'):
 
     @commands.command(
         name='embed',
-        aliases=['ebd', 'e'],
-        hidden=True
+        aliases=['ebd', 'e']
     )
     async def json_to_embed(self, ctx, *, json_text: str):
         embed = Embed.from_dict(json.loads(json_text))
@@ -52,8 +49,7 @@ class DevCog(commands.Cog, name='Dev'):
 
     @commands.command(
         name='delete',
-        aliases=['del'],
-        hidden=True
+        aliases=['del']
     )
     async def delete_message(self, ctx, message_id: int):
         message = self.bot.get_message(message_id)
@@ -64,19 +60,17 @@ class DevCog(commands.Cog, name='Dev'):
 
     @commands.command(
         name='resend',
-        aliases=['rsd', 'rs'],
-        hidden=True
+        aliases=['rsd', 'rs']
     )
-    async def resend_message(self, ctx: commands.Context, id1: Optional[int] = None, id2: Optional[int] = None):
-        if id1 is None:
-            return
-        if id2 is None:
-            message = self.bot.get_message(id1)
+    async def resend_message(self, ctx: commands.Context, channel_id: int, message_id: Optional[int] = None):
+        if message_id is None:
+            message_id = channel_id
+            message = self.bot.get_message(message_id)
             if message is None:
-                message = await ctx.fetch_message(id1)
+                message = await ctx.fetch_message(message_id)
         else:
-            channel = self.bot.get_channel(id1)
+            channel = self.bot.get_channel(channel_id)
             if channel is None:
-                channel = await self.bot.fetch_channel(id1)
-            message = await channel.fetch_message(id2)
+                channel = await self.bot.fetch_channel(channel_id)
+            message = await channel.fetch_message(message_id)
         await ctx.send(content=message.content, tts=message.tts, embeds=message.embeds)
