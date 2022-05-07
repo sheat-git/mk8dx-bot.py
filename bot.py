@@ -6,15 +6,20 @@ from track.cog import TrackCog
 from track.emoji import TrackEmoji
 from tool.cog import ToolCog
 from dev.cog import DevCog
+from lounge.cog import LoungeCog
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=['%', '％'], intents=intents)
 
-bot.add_cog(SokujiCog(bot))
-bot.add_cog(TrackCog(bot))
-bot.add_cog(ToolCog(bot))
-bot.add_cog(DevCog(bot))
+for cog in {
+    SokujiCog,
+    TrackCog,
+    ToolCog,
+    DevCog,
+    LoungeCog
+}:
+    bot.add_cog(cog(bot))
 
 async def update_activity():
     activity = discord.Activity(name=f'%sheat - {len(bot.guilds)} servers', type=discord.ActivityType.watching)
