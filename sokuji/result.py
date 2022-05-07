@@ -96,6 +96,6 @@ def make(tags: list[str], scores: list[list[int]]) -> File:
     if len(tags) == 2:
         make_img6(tags, scores).save(binary, 'png')
     binary.seek(0)
-    file = File(fp=binary, filename='table.png', description=' '.join(tags))
+    file = File(fp=binary, filename='result.png', description=' '.join(tags))
     binary.close()
     return file
