@@ -12,7 +12,7 @@ class TrackCog(commands.Cog, name='Track'):
     async def get_nicks(self, ctx: commands.Context, nick: str):
         track = Track.from_nick(nick)
         if track is None:
-            await ctx.send(f'Track {nick} not found.')
+            await ctx.send(f'Track Not Found: {nick}')
             return
         embed = Embed(
             title=f'{track.abbr} {track.abbr_ja}',
@@ -36,6 +36,8 @@ class TrackCog(commands.Cog, name='Track'):
                     track = Track.DCL
                 elif message.content == 'いるかはいるか':
                     track = Track.DS
+                elif message.content in {'はむで試行回数をこなしすぎるコース'}:
+                    track = Track.RMP
                 else:
                     return
 
