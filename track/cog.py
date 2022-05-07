@@ -29,14 +29,14 @@ class TrackCog(commands.Cog, name='Track'):
         if track is None:
 
             # my team HαM's joke
-            if message.guild.id == 899957283230994442:
+            if message.guild is not None and message.guild.id == 899957283230994442:
                 if message.content == 'どかんがどっかーん':
                     track = Track.BPP
                 elif message.content in {'きらーうらいか', 'キラー裏イカ'}:
                     track = Track.DCL
                 elif message.content == 'いるかはいるか':
                     track = Track.DS
-                elif message.content in {'はむで試行回数をこなしすぎるコース'}:
+                elif message.content == 'はむで試行回数をこなしすぎるコース':
                     track = Track.RMP
                 else:
                     return
