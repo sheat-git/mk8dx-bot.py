@@ -175,7 +175,7 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%tlm (プレイヤー)``` `%tlmsq`で最新のSQの集計表を表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
-        name=':warning:プレイヤー指定',
+        name=':warning: コマンド内の`(プレイヤー)`',
         value='指定がなければ、コマンド送信者のものを表示。\n'
         '複数指定はコマンドによって可能。方法は`,`区切り。メンションとラウンジ名の混同OK。',
         inline=False
@@ -194,7 +194,7 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%mkc (プレイヤー)```'
     )
     INSTRUCTION_PAGES_JA[3].add_field(
-        name=':warning:プレイヤー指定',
+        name=':warning: コマンド内の`(プレイヤー)`',
         value='指定がなければ、コマンド送信者のものを表示。\n'
         '複数指定はコマンドによって可能。方法は`,`区切り。メンションとラウンジ名の混同OK。',
         inline=False
@@ -229,7 +229,10 @@ class ToolCog(commands.Cog, name='Tool'):
             title='Basics',
         ),
         Embed(
-            title='Commands to Edit Sokuji'
+            title='Edit Sokuji Commands'
+        ),
+        Embed(
+            title='Lounge Commands'
         ),
         Embed(
             title='Other Commands'
@@ -335,30 +338,71 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%japanize```alias : `%ja`'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
+        name='MMR',
+        value='```%mmr (player)``` `%mmr4` shows mmr in the S4.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='Table',
+        value='```%table <id>```',
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='The Latest Table',
+        value='```%lm (player)``` `%lm2` shows second latest table.',
+        inline=False
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='The Latest Table (in the format)',
+        value='```%flm (player)``` `%flm2` shows the latest table in 2v2.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='The Latest Table (in the tier)',
+        value='```%tlm (player)``` `%tlmsq` shows the latest table in tier SQ.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name=':warning: `(player)` in Commands',
+        value='If not specified, show the command sender\'s.\n'
+        'Multiple specifications are possible depending on the command. The method is `,` delimited. Mention and lounge name confusion is OK.',
+        inline=False
+    )
+    INSTRUCTION_PAGES_EN[3].add_field(
         name='Choose One at Random',
         value='```%choose A B C ...```alias : `%chs`',
         inline=False
     )
-    INSTRUCTION_PAGES_EN[2].add_field(
+    INSTRUCTION_PAGES_EN[3].add_field(
+        name='FC',
+        value='```%fc (player)```'
+    )
+    INSTRUCTION_PAGES_EN[3].add_field(
+        name='MKC Links',
+        value='```%mkc (player)```'
+    )
+    INSTRUCTION_PAGES_EN[3].add_field(
+        name=':warning: `(player)` in Commands',
+        value='If not specified, show the command sender\'s.\n'
+        'Multiple specifications are possible depending on the command. The method is `,` delimited. Mention and lounge name confusion is OK.',
+        inline=False
+    )
+    INSTRUCTION_PAGES_EN[3].add_field(
         name='Need More Commands',
         value='DM <@426317116958965764> !'
     )
-    INSTRUCTION_PAGES_EN[3].add_field(
+    INSTRUCTION_PAGES_EN[4].add_field(
         name='Consecutive Ranks',
         value='If ranks are 4th,5th,6th,7th,8th,9th, you can input like below.```4-9```',
         inline=False
     )
-    INSTRUCTION_PAGES_EN[3].add_field(
+    INSTRUCTION_PAGES_EN[4].add_field(
         name='Top N',
         value='If your team get top 6, you can input without 1st like below.```-6```',
         inline=False
     )
-    INSTRUCTION_PAGES_EN[3].add_field(
+    INSTRUCTION_PAGES_EN[4].add_field(
         name='Bottom N',
         value='If your team get 3rd,5th,6th,10th,11th,12th (includes bottom 3), you can input without bottom 3 like below.```356```',
         inline=False
     )
-    INSTRUCTION_PAGES_EN[3].add_field(
+    INSTRUCTION_PAGES_EN[4].add_field(
         name='10th, 11th, and 12th',
         value='The alternative for "10" is "0". And the alternative for "11" is "+". 12th is included in bottom N, so you don\'t have to input "12".',
         inline=False
