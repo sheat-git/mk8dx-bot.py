@@ -54,6 +54,9 @@ class ToolCog(commands.Cog, name='Tool'):
             title='即時編集コマンド'
         ),
         Embed(
+            title='ラウンジコマンド'
+        ),
+        Embed(
             title='その他のコマンド'
         ),
         Embed(
@@ -90,7 +93,7 @@ class ToolCog(commands.Cog, name='Tool'):
     )
     INSTRUCTION_PAGES_JA[0].add_field(
         name='集計表',
-        value='```%table```'
+        value='```%result```'
     )
     INSTRUCTION_PAGES_JA[0].add_field(
         name='集計表転送',
@@ -151,31 +154,72 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%japanize``` `%ja`でも可能。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
+        name='MMR',
+        value='```%mmr (プレイヤー)``` `%mmr4`でシーズン4のMMRを表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='集計表',
+        value='```%table <id>```',
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='最新の集計表',
+        value='```%lm (プレイヤー)``` `%lm2`で最新から2番目の集計表を表示。',
+        inline=False
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='最新の集計表（形式指定）',
+        value='```%flm (プレイヤー)``` `%flm2`で最新の2v2の集計表を表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='最新の集計表（Tier指定）',
+        value='```%tlm (プレイヤー)``` `%tlmsq`で最新のSQの集計表を表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name=':warning:プレイヤー指定',
+        value='指定がなければ、コマンド送信者のものを表示。\n'
+        '複数指定はコマンドによって可能。方法は`,`区切り。メンションとラウンジ名の混同OK。',
+        inline=False
+    )
+    INSTRUCTION_PAGES_JA[3].add_field(
         name='ランダム選択',
         value='```%choose A B C ...```A、B、C、、、の選択肢からランダムで選択。`%chs`でも可能。',
         inline=False
     )
-    INSTRUCTION_PAGES_JA[2].add_field(
+    INSTRUCTION_PAGES_JA[3].add_field(
+        name='フレンドコード',
+        value='```%fc (プレイヤー)```'
+    )
+    INSTRUCTION_PAGES_JA[3].add_field(
+        name='MKCアカウント',
+        value='```%mkc (プレイヤー)```'
+    )
+    INSTRUCTION_PAGES_JA[3].add_field(
+        name=':warning:プレイヤー指定',
+        value='指定がなければ、コマンド送信者のものを表示。\n'
+        '複数指定はコマンドによって可能。方法は`,`区切り。メンションとラウンジ名の混同OK。',
+        inline=False
+    )
+    INSTRUCTION_PAGES_JA[3].add_field(
         name='もっとコマンドが欲しい',
         value='<@!426317116958965764> までDMを！',
         inline=False
     )
-    INSTRUCTION_PAGES_JA[3].add_field(
+    INSTRUCTION_PAGES_JA[4].add_field(
         name='連続した順位があるとき',
         value='4位から9位のとき、```4-9```と入力が可能。',
         inline=False
     )
-    INSTRUCTION_PAGES_JA[3].add_field(
+    INSTRUCTION_PAGES_JA[4].add_field(
         name='前○のとき',
         value='前6のとき、```-6```と1位を省略して入力が可能。',
         inline=False
     )
-    INSTRUCTION_PAGES_JA[3].add_field(
+    INSTRUCTION_PAGES_JA[4].add_field(
         name='下○をとったとき',
         value='3, 5, 6, 10, 11, 12位のように、下3が含まれているとき、```356```のみ入力して下○の順位は全て省略可能。',
         inline=False
     )
-    INSTRUCTION_PAGES_JA[3].add_field(
+    INSTRUCTION_PAGES_JA[4].add_field(
         name='10位以降の2桁の順位をとったとき',
         value='10位は0、11位は+で代替入力が可能。上記の、下の順位は自動で埋める機能があるため、12位は入力しなくていい。',
         inline=False
@@ -229,8 +273,8 @@ class ToolCog(commands.Cog, name='Tool'):
         inline=False
     )
     INSTRUCTION_PAGES_EN[0].add_field(
-        name='Table (6v6 only)',
-        value='```%table```'
+        name='Result Image (6v6 only)',
+        value='```%result```'
     )
     INSTRUCTION_PAGES_EN[0].add_field(
         name='Send Table (6v6 only)',
