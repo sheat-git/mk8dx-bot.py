@@ -8,7 +8,7 @@ from discord.ext import commands
 import mk8dx.lounge_api as la
 from mk8dx import Rank, Track
 from .sokuji import Sokuji, SubSokuji, find
-import sokuji.table as table
+import sokuji.result as result
 from .tag import to_tag
 from locale_ import Locale
 
@@ -355,7 +355,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         else:
             await ctx.send('Stopped updating banner of the following users.\n' + ', '.join(member[:-4] for member in removed))
 
-    async def _send_table(self, messageable: Messageable, sender: Messageable):
+    async def _send_result(self, messageable: Messageable, sender: Messageable):
         sokuji_message, _, _ = await find(messageable=messageable, user_id=self.bot.user.id)
         if sokuji_message is None:
             return
@@ -367,23 +367,23 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         embed = Embed(
             title=' - '.join(tags)
         )
-        embed.set_image(url='attachment://table.png')
-        await sender.send(embed=embed, file=table.make(tags=tags, scores=sokuji.scores))
+        embed.set_image(url='attachment://result.png')
+        await sender.send(embed=embed, file=result.make(tags=tags, scores=sokuji.scores))
 
     @commands.command(
-        name='table',
-        aliases=['result', 'r', 'tbl'],
-        brief='Generates table'
+        name='result',
+        aliases=['r'],
+        brief='Generates result image'
     )
-    async def make_table(self, ctx):
-        await self._send_table(ctx, ctx)
+    async def make_result(self, ctx):
+        await self._send_result(ctx, ctx)
 
     @commands.command(
-        name='sendTable',
-        aliases=['sd', 'st', 'send'],
-        brief='Generates table and sends to the designated channel'
+        name='sendResult',
+        aliases=['sd', 'sr', 'send'],
+        brief='Generates result image and sends to the designated channel'
     )
-    async def send_table(self, ctx: commands.Context):
+    async def send_result(self, ctx: commands.Context):
         sender = None
         if ctx.message.channel_mentions:
             sender = ctx.message.channel_mentions[0]
@@ -401,7 +401,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         if sender is None:
             await ctx.send('Error: Channel Not Found.')
             return
-        await self._send_table(ctx, sender)
+        await self._send_result(ctx, sender)
 
     @commands.Cog.listener(name='on_message')
     async def add_text(self, message: Message):
