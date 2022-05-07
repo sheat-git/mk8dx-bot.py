@@ -381,7 +381,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     @commands.command(
         name='sendResult',
         aliases=['sd', 'sr', 'send'],
-        brief='Generates result image and sends to the designated channel'
+        brief='Generates result image and sends to the specified channel'
     )
     async def send_result(self, ctx: commands.Context):
         sender = None
