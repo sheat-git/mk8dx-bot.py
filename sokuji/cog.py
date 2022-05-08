@@ -54,35 +54,35 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         return await Sokuji.start(tags=tags, format=format, locale=locale).send(messageable=ctx)
     
     @commands.command(
-        aliases=['sokuji', 'calc', 'cal', 'c'],
+        aliases=['sokuji', 'cal', 'c'],
         brief='Starts sokuji'
     )
     async def start(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=None)
     
     @commands.command(
-        aliases=['sokuji2', 'calc2', 'cal2', 'c2'],
+        aliases=['sokuji2', 'cal2', 'c2'],
         brief='Starts 2v2 sokuji'
     )
     async def start2(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=2)
 
     @commands.command(
-        aliases=['sokuji3', 'calc3', 'cal3', 'c3'],
+        aliases=['sokuji3', 'cal3', 'c3'],
         brief='Starts 3v3 sokuji'
     )
     async def start3(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=3)
 
     @commands.command(
-        aliases=['sokuji4', 'calc4', 'cal4', 'c4'],
+        aliases=['sokuji4', 'cal4', 'c4'],
         brief='Starts 4v4 sokuji'
     )
     async def start4(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=4)
 
     @commands.command(
-        aliases=['sokuji6', 'calc6', 'cal6', 'c6'],
+        aliases=['sokuji6', 'cal6', 'c6'],
         brief='Starts 6v6 sokuji'
     )
     async def start6(self, ctx, *tags):
