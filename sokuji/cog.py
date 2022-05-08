@@ -329,7 +329,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
                     name=f'Start updating for {user[:-4]}',
                     value=f'https://sheat-git.github.io/sokuji/?user={user}'
                 )
-        embed.set_footer(text='Copyright (c) 2020 GungeeSpla')
+        embed.set_footer(text='Design: © GungeeSpla')
         await ctx.send(embed=embed)
         await sokuji.send(ctx)
         await sokuji_message.message.delete()
