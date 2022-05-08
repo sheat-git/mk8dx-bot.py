@@ -89,8 +89,8 @@ class LoungeCog(commands.Cog, name='Lounge'):
         aliases=['getMKC'],
         brief='Shows MKC Profile and Forum links'
     )
-    async def mkc(self, ctx: commands.Context, *, players_text: Optional[str]):
-        queries = self.extract_queries(ctx=ctx, players_text=players_text)
+    async def mkc(self, ctx: commands.Context, *, players: Optional[str]):
+        queries = self.extract_queries(ctx=ctx, players_text=players)
         players = await self.filter_not_found(
             ctx=ctx,
             queries=queries,
@@ -115,8 +115,8 @@ class LoungeCog(commands.Cog, name='Lounge'):
         name='fc',
         brief='Shows switch\'s friend code'
     )
-    async def fc(self, ctx: commands.Context, *, players_text: Optional[str]):
-        queries = self.extract_queries(ctx=ctx, players_text=players_text)
+    async def fc(self, ctx: commands.Context, *, players: Optional[str]):
+        queries = self.extract_queries(ctx=ctx, players_text=players)
         players = await self.filter_not_found(
             ctx=ctx,
             queries=queries,
@@ -178,8 +178,8 @@ class LoungeCog(commands.Cog, name='Lounge'):
         name='mmr',
         brief='Shows mmr'
     )
-    async def mmr(self, ctx: commands.Context, *, players_text: Optional[str]):
-        await self._mmr(ctx, players_text)
+    async def mmr(self, ctx: commands.Context, *, players: Optional[str]):
+        await self._mmr(ctx=ctx, players_text=players)
 
     async def table_embed(self, table: lounge_api.TableDetails) -> Embed:
         def table_text() -> Optional[str]:
@@ -324,7 +324,7 @@ class LoungeCog(commands.Cog, name='Lounge'):
                 return
             if command_name.startswith(('formatlastmatch', 'flm')):
                 format = int(command_name[3:]) if command_name.startswith('flm') else int(command_name[15:])
-                if not format in {1, 2, 3, 4, 6}:
+                if format not in {1, 2, 3, 4, 6}:
                     await ctx.send(f'Invalid Format: {format}')
                     return
                 num_teams = 12 // format
