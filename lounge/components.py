@@ -34,7 +34,7 @@ class LoungeEmbed(Embed):
             timestamp=timestamp
         )
         if thumbnail and rd.url is not None:
-            self.set_thumbnail(rd.url)
+            self.set_thumbnail(url=rd.url)
 
 
 class RankDivision(Enum):
@@ -118,4 +118,59 @@ class RankDivision(Enum):
     UNKNOWN = (
         'Unknown',
         'ff0000'
+    )
+
+
+class Span:
+ 
+    __slots__ = (
+        'max',
+        'min',
+        'color'
+    )
+
+    def __init__(self, max: int, min: int, color: Colour) -> None:
+        self.max: int = max
+        self.min: int = min
+        self.color: str = '#' + format(color.value, 'x')
+
+
+class SeasonDivision(Enum):
+
+    __slots__ = (
+        'spans',
+        'lines',
+        'top_color'
+    )
+
+    def __new__(cls: type[SeasonDivision], season: int, *_) -> RankDivision:
+        obj = object.__new__(cls)
+        obj._value_ = season
+        return obj
+
+    def __init__(
+        self,
+        _: int,
+        rank: list[int],
+        level: list[int]
+    ) -> None:
+        divisions = list(RankDivision)
+        self.spans: list[Span] = [Span(max=rank[i-1], min=rank[i], color=divisions[i].color) for i in range(len(rank)-1, 0, -1)]
+        self.lines: list[int] = level
+        self.top_color: str = '#' + format(divisions[0].color.value, 'x')
+
+    S4 = (
+        4,
+        [14500, 13000, 11500, 10000, 8500, 7000, 5500, 4000, 0],
+        [2000]
+    )
+    S5 = (
+        5,
+        [14000, 13000, 11000, 10000, 8000, 6000, 4000, 2000, 0],
+        [12000, 9000, 7000, 5000, 3000, 1000]
+    )
+    S6 = (
+        6,
+        [15000, 14000, 12000, 10000, 8000, 6000, 4000, 2000, 0],
+        [13000, 11000, 9000, 7000, 5000, 3000, 1000]
     )

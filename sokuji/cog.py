@@ -1,8 +1,8 @@
 import asyncio
 import string
-from typing import Optional
+from typing import Optional, Union
 from components import ColoredEmbed as Embed
-from discord import Message, Member
+from discord import Message, Member, ApplicationContext, Option
 from discord.abc import Messageable
 from discord.ext import commands
 import mk8dx.lounge_api as la
@@ -17,7 +17,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot: commands.Bot = bot
 
-    def validate_tags(self, ctx: commands.Context, tags: list[str], format: Optional[int]) -> tuple[list[str], int]:
+    def validate_tags(self, ctx: Union[ApplicationContext, commands.Context], tags: list[str], format: Optional[int]) -> tuple[list[str], int]:
         if format is None:
             if len(tags) in {2, 3, 4, 6}:
                 format = 12 // len(tags)
@@ -54,39 +54,77 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         return await Sokuji.start(tags=tags, format=format, locale=locale).send(messageable=ctx)
     
     @commands.command(
-        aliases=['sokuji', 'cal', 'c'],
+        name='sokuji',
+        aliases=['start', 'cal', 'c'],
         brief='Starts sokuji'
     )
     async def start(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=None)
     
     @commands.command(
-        aliases=['sokuji2', 'cal2', 'c2'],
+        name='sokuji2',
+        aliases=['start2', 'cal2', 'c2'],
         brief='Starts 2v2 sokuji'
     )
     async def start2(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=2)
 
     @commands.command(
-        aliases=['sokuji3', 'cal3', 'c3'],
+        name='sokuji3',
+        aliases=['start3', 'cal3', 'c3'],
         brief='Starts 3v3 sokuji'
     )
     async def start3(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=3)
 
     @commands.command(
-        aliases=['sokuji4', 'cal4', 'c4'],
+        name='sokuji4',
+        aliases=['start4', 'cal4', 'c4'],
         brief='Starts 4v4 sokuji'
     )
     async def start4(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=4)
 
     @commands.command(
-        aliases=['sokuji6', 'cal6', 'c6'],
-        brief='Starts 6v6 sokuji'
+        name='sokuji6',
+        aliases=['start6', 'cal6', 'c6'],
+        brief='Starts 6v6 sokuji',
     )
     async def start6(self, ctx, *tags):
         await self._start(ctx=ctx, tags=tags, format=6)
+
+    @commands.slash_command(
+        name='sokuji',
+        description='Starts sokuji',
+        description_localizations={'ja': '即時集計開始'}
+    )
+    async def slash_start(
+        self,
+        ctx: ApplicationContext,
+        tags: Option(
+            str,
+            name='tags',
+            name_localizations={'ja': 'タグ'},
+            description='Enter tags with separated by spaces.',
+            description_localizations={'ja': 'タグを空白区切りで入力'}
+        ),
+        format: Option(
+            int,
+            choices=[2, 3, 4, 6],
+            required=False,
+            name='format',
+            name_localizations={'ja': '形式'},
+            description='Enter format',
+            description_localizations={'ja': '形式を入力'}
+        )
+    ):
+        tags, format = self.validate_tags(ctx=ctx, tags=list(tags.split()), format=format)
+        if (ctx.locale or 'ja') == 'ja':
+            locale = Locale.JA
+        else:
+            locale = Locale.EN
+        sokuji = Sokuji.start(tags=tags, format=format, locale=locale)
+        await ctx.respond(embed=sokuji.embed)
 
     @commands.command(
         brief='Ends sokuji'
@@ -144,7 +182,6 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     
     @commands.command(
         name='tags',
-        aliases=['set', 's'],
         brief='Edits all tags'
     )
     async def edit_tags(self, ctx, *tags):
@@ -399,7 +436,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
                         sender = channel
                         break
         if sender is None:
-            await ctx.send('Error: Channel Not Found.')
+            await ctx.send('Channel Not Found')
             return
         await self._send_result(ctx, sender)
 
@@ -445,3 +482,4 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         if subsokuji.is_valid():
             sokuji.add_subsokuji(subsokuji=subsokuji)
             await sokuji.send(message.channel)
+            await sokuji_message.message.delete()

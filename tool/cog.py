@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 import random
 
-from discord import DMChannel
+from discord import ApplicationContext, DMChannel, Option
 from components import ColoredEmbed as Embed
 from discord.ext import commands, pages
 
@@ -22,22 +22,39 @@ class ToolCog(commands.Cog, name='Tool'):
         return
     
     async def instruction_en(self, ctx: commands.Context):
-        if self.INSTRUCTION_PAGES_EN is None:
-            await ctx.send('Instruction No Data Error...')
-            return
         await ctx.author.send('The author is Japanese. Please note that my English is poor.')
         await pages.Paginator(pages=self.INSTRUCTION_PAGES_EN).send(ctx, target=ctx.author)
         if not isinstance(ctx.channel, DMChannel):
             await ctx.reply('Sent to DM.')
 
     async def instruction_ja(self, ctx: commands.Context):
-        if self.INSTRUCTION_PAGES_JA is None:
-            await ctx.send('Instruction No Data Error...')
-            return
         await ctx.author.send(r'If you want to see the English version, use `%sheat en` command.')
         await pages.Paginator(pages=self.INSTRUCTION_PAGES_JA).send(ctx, target=ctx.author)
         if not isinstance(ctx.channel, DMChannel):
             await ctx.reply('DMに送信しました。')
+
+    @commands.slash_command(
+        name='sheat',
+        description='Shows introduction of sheat bot.',
+        description_localizations={'ja': '使用方法'},
+    )
+    async def slash_instruction(
+        self,
+        ctx: ApplicationContext,
+        # lang: Option(
+        #     str,
+        #     choices=['日本語', 'English'],
+        #     required=False,
+        #     name='lang',
+        #     name_localizations={'ja': '言語'},
+        # )
+    ):
+        lang = None
+        if lang is None and (ctx.locale or 'ja') == 'ja' or lang == '日本語':
+            p = self.INSTRUCTION_PAGES_JA
+        else:
+            p = self.INSTRUCTION_PAGES_EN
+        await pages.Paginator(pages=p).respond(ctx.interaction, ephemeral=True)
 
     @commands.command(name='choose', aliases=['chs'], brief='Chooses one at random')
     async def choose(self, ctx, *items):
@@ -66,7 +83,7 @@ class ToolCog(commands.Cog, name='Tool'):
     ]
     INSTRUCTION_PAGES_JA[0].add_field(
         name='即時集計開始',
-        value='```%start タグ1 タグ2 ...```チームの数だけ`タグ`を入力。',
+        value='```%sokuji タグ1 タグ2 ...```チームの数だけ`タグ`を入力。',
         inline=False
     )
     INSTRUCTION_PAGES_JA[0].add_field(
@@ -249,7 +266,7 @@ class ToolCog(commands.Cog, name='Tool'):
     )
     INSTRUCTION_PAGES_EN[0].add_field(
         name='Start Sokuji',
-        value='```%start tag1 tag2 ...```Input as many `tag`s as there are teams.',
+        value='```%sokuji tag1 tag2 ...```Input as many `tag`s as there are teams.',
         inline=False
     )
     INSTRUCTION_PAGES_EN[0].add_field(

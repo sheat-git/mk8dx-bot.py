@@ -1,13 +1,12 @@
 from typing import Optional, Union
 import re
 import asyncio
-from discord import Embed, Message
-import discord
+from discord import Embed, Member, ApplicationContext
 from discord.abc import Messageable
 from discord.ext import commands
 from discord.utils import format_dt
 from components import ColoredEmbed
-from .components import LoungeEmbed
+from .stats import make_content
 from mk8dx import lounge_api
 
 
@@ -307,6 +306,32 @@ class LoungeCog(commands.Cog, name='Lounge'):
     )
     async def tierlastmatch(self, ctx, *, player: Optional[str] = None):
         await self._lastmatch(ctx, player_text=player)
+
+    async def _stats(self, ctx: commands.Context, player_text: Optional[str] = None, season: Optional[int] = None):
+        query = self.extract_query(ctx=ctx, player_text=player_text)
+        if isinstance(query, int):
+            details = await self.get_player_details(discord_id=query, season=season)
+            if details is None:
+                await ctx.send(f'Not Found: <@!{query}>')
+                return
+        else:
+            details = await lounge_api.get_player_details(name=query, season=season)
+            if details is None:
+                await ctx.send(f'Not Found: {query}')
+                return
+        if len(details.mmr_changes) <= 1:
+            await ctx.send(f'Not Played: {details.name}')
+            return
+        embed, file = make_content(details=details)
+        await ctx.send(embed=embed, file=file)
+
+    @commands.command(
+        name='stats',
+        aliases=['ls'],
+        brief='Shows stats'
+    )
+    async def stats(self, ctx: commands.Context, *, player: Optional[str] = None):
+        await self._stats(ctx=ctx, player_text=player)
 
     @commands.Cog.listener(name='on_command_error')
     async def additional_commands(self, ctx: commands.Context, error):
