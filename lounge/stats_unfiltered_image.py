@@ -1,14 +1,17 @@
 from io import BytesIO
 import matplotlib.pyplot as plt
 from discord import File
-from mk8dx.lounge_api import PlayerDetails
 from .components import SeasonDivision
 
 
-def make(details: PlayerDetails):
-    mmrs = list(map(lambda c: c.new_mmr, reversed(details.mmr_changes)))
-    fig = plt.figure(facecolor='#00478b', tight_layout=True)
-    ax = fig.add_subplot(111, xmargin=0, facecolor='#00478b')
+def make(mmrs: list[list[int]], season: int) -> File:
+    xdata = []
+    ydata = []
+    for i, l in enumerate(mmrs):
+        xdata.extend([i + j/len(l) for j in range(len(l))])
+        ydata.extend(l)
+    fig = plt.figure(facecolor='#2f3136', tight_layout=True)
+    ax = fig.add_subplot(111, xmargin=0, facecolor='#2f3136')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
@@ -17,8 +20,8 @@ def make(details: PlayerDetails):
     ax.grid(color='w', ls=':', dash_capstyle='round')
     ax.set_axisbelow(False)
     try:
-        division = SeasonDivision(details.season)
-        ax.plot(mmrs, color='#00478b', lw=9, solid_capstyle='round')
+        division = SeasonDivision(season)
+        ax.plot(xdata, ydata, color='black', lw=9, solid_capstyle='round', alpha=0.3)
         min_ylim, max_ylim = ax.get_ylim()
         ax.set_facecolor(division.top_color)
         for span in division.spans:
@@ -30,10 +33,10 @@ def make(details: PlayerDetails):
                 ax.axhline(line, color='w')
         ax.set_ylim((min_ylim, max_ylim))
         if min_ylim < 0:
-            ax.axhspan(min_ylim, 0, color='#00478b')
+            ax.axhspan(min_ylim, 0, color='#2f3136')
     except ValueError:
         pass
-    ax.plot(mmrs, color='w', solid_capstyle='round')
+    ax.plot(xdata, ydata, color='w', solid_capstyle='round')
     binary = BytesIO()
     fig.savefig(binary, format='png')
     binary.seek(0)

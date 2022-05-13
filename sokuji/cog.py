@@ -8,7 +8,7 @@ from discord.ext import commands
 import mk8dx.lounge_api as la
 from mk8dx import Rank, Track
 from .sokuji import Sokuji, SubSokuji, find
-import sokuji.result as result
+import sokuji.result_image as result_image
 from .tag import to_tag
 from locale_ import Locale
 
@@ -405,7 +405,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             title=' - '.join(tags)
         )
         embed.set_image(url='attachment://result.png')
-        await sender.send(embed=embed, file=result.make(tags=tags, scores=sokuji.scores))
+        await sender.send(embed=embed, file=result_image.make(tags=tags, scores=sokuji.scores))
 
     @commands.command(
         name='result',
