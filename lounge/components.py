@@ -93,17 +93,17 @@ class RankDivision(Enum):
     )
     GOLD = (
         'Gold',
-        'f1c232',
+        'f1c40f',
         'https://i.imgur.com/6yAatOq.png'
     )
     SILVER = (
         'Silver',
-        'cccccc',
+        '7d8396',
         'https://i.imgur.com/xgFyiYa.png'
     )
     BRONZE = (
         'Bronze',
-        'b45f06',
+        'e67e22',
         'https://i.imgur.com/DxFLvtO.png'
     )
     IRON = (

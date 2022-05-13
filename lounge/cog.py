@@ -252,7 +252,7 @@ class LoungeCog(commands.Cog, name='Lounge'):
         ctx: commands.Context,
         count: int = 1,
         player_text: Optional[str] = None,
-        filter = lambda _: True
+        filter_func = lambda _: True
     ):
         query = self.extract_query(ctx=ctx, player_text=player_text)
         if isinstance(query, int):
@@ -268,7 +268,7 @@ class LoungeCog(commands.Cog, name='Lounge'):
         season = NOW_SEASON
         while details is not None:
             for change in details.mmr_changes:
-                if change.reason == lounge_api.PlayerDetails.MmrChange.Reason.TABLE and filter(change):
+                if change.reason == lounge_api.PlayerDetails.MmrChange.Reason.TABLE and filter_func(change):
                     count -= 1
                     if count == 0:
                         table_id = change.change_id
@@ -296,18 +296,22 @@ class LoungeCog(commands.Cog, name='Lounge'):
         aliases=['flm'],
         brief='Shows the lastest table in the format'
     )
-    async def formatlastmatch(self, ctx, *, player: Optional[str] = None):
-        await self._lastmatch(ctx, player_text=player)
+    async def formatlastmatch(self, ctx, format: int, *, player: Optional[str] = None):
+        if format not in {1, 2, 3, 4, 6}:
+            await ctx.send(f'Invalid Format: {format}')
+        num_teams = 12 // format
+        await self._lastmatch(ctx, player_text=player, filter_func=lambda c: c.num_teams == num_teams)
 
     @commands.command(
         name='tierlastmatch',
         aliases=['tlm'],
         brief='Shows the lastest table in the tier'
     )
-    async def tierlastmatch(self, ctx, *, player: Optional[str] = None):
-        await self._lastmatch(ctx, player_text=player)
+    async def tierlastmatch(self, ctx, tier: str, *, player: Optional[str] = None):
+        tier = tier.upper()
+        await self._lastmatch(ctx, player_text=player, filter_func=lambda c: c.tier == tier)
 
-    async def _stats(self, ctx: commands.Context, player_text: Optional[str] = None, season: Optional[int] = None):
+    async def _stats(self, ctx: commands.Context, player_text: Optional[str] = None, season: Optional[int] = None, filter_func=None, title=''):
         query = self.extract_query(ctx=ctx, player_text=player_text)
         if isinstance(query, int):
             details = await self.get_player_details(discord_id=query, season=season)
@@ -322,7 +326,11 @@ class LoungeCog(commands.Cog, name='Lounge'):
         if len(details.mmr_changes) <= 1:
             await ctx.send(f'Not Played: {details.name}')
             return
-        embed, file = make_content(details=details)
+        content = make_content(details=details, filter_func=filter_func, title=title)
+        if content is None:
+            await ctx.send(f'{title} Not Played: {details.name}')
+            return
+        embed, file = content
         await ctx.send(embed=embed, file=file)
 
     @commands.command(
@@ -332,6 +340,31 @@ class LoungeCog(commands.Cog, name='Lounge'):
     )
     async def stats(self, ctx: commands.Context, *, player: Optional[str] = None):
         await self._stats(ctx=ctx, player_text=player)
+
+    @commands.command(
+        name='formatstats',
+        aliases=['fs'],
+        brief='Shows format stats'
+    )
+    async def formatstats(self, ctx: commands.Context, format: int, *, player: Optional[str] = None):
+        if format not in {1, 2, 3, 4, 6}:
+            await ctx.send(f'Invalid Format: {format}')
+            return
+        if format == 1:
+            title = 'Format FFA'
+        else:
+            title = f'Format {format}v{format}'
+        num_teams = 12 // format
+        await self._stats(ctx=ctx, player_text=player, filter_func=lambda c: c.num_teams == num_teams, title=title)
+
+    @commands.command(
+        name='tierstats',
+        aliases=['ts'],
+        brief='Shows tier stats'
+    )
+    async def tierstats(self, ctx: commands.Context, tier: str, *, player: Optional[str] = None):
+        tier = tier.upper()
+        await self._stats(ctx=ctx, player_text=player, filter_func=lambda c: c.tier == tier, title=f'Tier {tier}')
 
     @commands.Cog.listener(name='on_command_error')
     async def additional_commands(self, ctx: commands.Context, error):
@@ -348,15 +381,47 @@ class LoungeCog(commands.Cog, name='Lounge'):
                 await self._lastmatch(ctx=ctx, count=count, player_text=arg)
                 return
             if command_name.startswith(('formatlastmatch', 'flm')):
-                format = int(command_name[3:]) if command_name.startswith('flm') else int(command_name[15:])
+                count = int(command_name[3:]) if command_name.startswith('flm') else int(command_name[15:])
+                args = list(arg.split(maxsplit=1))
+                format = int(args[0])
                 if format not in {1, 2, 3, 4, 6}:
                     await ctx.send(f'Invalid Format: {format}')
                     return
                 num_teams = 12 // format
-                await self._lastmatch(ctx=ctx, player_text=arg, filter=lambda c: c.num_teams == num_teams)
+                player_text = args[1] if len(args) == 2 else ''
+                await self._lastmatch(ctx=ctx, player_text=player_text, count=count, filter_func=lambda c: c.num_teams == num_teams)
                 return
             if command_name.startswith(('tierlastmatch', 'tlm')):
-                tier = (command_name[3:] if command_name.startswith('tlm') else command_name[13:]).upper()
-                await self._lastmatch(ctx=ctx, player_text=arg, filter=lambda c: c.tier == tier)
+                count = int(command_name[3:]) if command_name.startswith('tlm') else int(command_name[13:])
+                args = list(arg.split(maxsplit=1))
+                tier = args[0].upper()
+                player_text = args[1] if len(args) == 2 else ''
+                await self._lastmatch(ctx=ctx, player_text=player_text, count=count, filter_func=lambda c: c.tier == tier)
+                return
+            if command_name.startswith(('stats', 'ls')):
+                season = int(command_name[2:] if command_name.startswith('ls') else command_name[5:])
+                await self._stats(ctx=ctx, player_text=arg, season=season)
+                return
+            if command_name.startswith(('fs', 'formatstats')):
+                season = int(command_name[2:] if command_name.startswith('fs') else command_name[11:])
+                args = list(arg.split(maxsplit=1))
+                format = int(args[0])
+                if format not in {1, 2, 3, 4, 6}:
+                    await ctx.send(f'Invalid Format: {format}')
+                    return
+                if format == 1:
+                    title = 'Format FFA'
+                else:
+                    title = f'Format {format}v{format}'
+                num_teams = 12 // format
+                player_text = args[1] if len(args) == 2 else ''
+                await self._stats(ctx=ctx, player_text=player_text, season=season, filter_func=lambda c: c.num_teams == num_teams, title=title)
+                return
+            if command_name.startswith(('ts', 'tierstats')):
+                season = int(command_name[2:] if command_name.startswith('ts') else command_name[9:])
+                args = list(arg.split(maxsplit=1))
+                tier = args[0].upper()
+                player_text = args[1] if len(args) == 2 else ''
+                await self._stats(ctx=ctx, player_text=player_text, season=season, filter_func=lambda c: c.tier == tier, title=f'Tier {tier}')
                 return
         raise error
