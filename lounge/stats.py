@@ -70,7 +70,7 @@ def _make_content_unfiltered(details: PlayerDetails) -> tuple[Embed, Optional[Fi
     )
     embed.add_field(
         name='+/- (Last10)',
-        value=details.gain_loss_last_ten if details.gain_loss_last_ten is not None else '-'
+        value=format(details.gain_loss_last_ten, '+') if details.gain_loss_last_ten is not None else '-'
     )
     embed.add_field(
         name='Avg.',
@@ -199,7 +199,7 @@ def _make_content_filtered(details: PlayerDetails, filter_func, title: str) -> O
     )
     embed.add_field(
         name='+/-',
-        value=total_delta
+        value=format(total_delta, '+')
     )
     embed.add_field(
         name='Avg.',
@@ -223,7 +223,7 @@ def _make_content_filtered(details: PlayerDetails, filter_func, title: str) -> O
         name='Events Played',
         value=events_played
     )
-    if largest_gain is None:
+    if largest_gain == 0:
         largest_gain_value = '-'
     elif largest_gain_table_id is None:
         largest_gain_value = format(largest_gain, '+')
@@ -233,7 +233,7 @@ def _make_content_filtered(details: PlayerDetails, filter_func, title: str) -> O
         name='Largest Gain',
         value=largest_gain_value
     )
-    if largest_loss is None:
+    if largest_loss == 1:
         largest_loss_value = '-'
     elif largest_loss_table_id is None:
         largest_loss_value = largest_loss
