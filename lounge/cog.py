@@ -380,7 +380,7 @@ class LoungeCog(commands.Cog, name='Lounge'):
         brief='Shows last# shats'
     )
     async def last(self, ctx: commands.Context, *, player: Optional[str] = None):
-        await self._stats(ctx=ctx, player_text=player, title='Last 10', start=-10)
+        await self._stats(ctx=ctx, player_text=player, title='Last 1', start=-1)
     
     @commands.command(
         name='mid',
@@ -394,7 +394,7 @@ class LoungeCog(commands.Cog, name='Lounge'):
         brief='Shows first# stats'
     )
     async def first(self, ctx: commands.Context, *, player: Optional[str] = None):
-        await self._stats(ctx=ctx, player_text=player, title='First 10', start=1, stop=11)
+        await self._stats(ctx=ctx, player_text=player, title='First 1', start=1, stop=2)
 
     @commands.Cog.listener(name='on_command_error')
     async def additional_commands(self, ctx: commands.Context, error):
