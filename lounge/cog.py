@@ -375,6 +375,27 @@ class LoungeCog(commands.Cog, name='Lounge'):
         tier = tier.upper()
         await self._stats(ctx=ctx, player_text=player, filter_func=lambda c: c.tier == tier, title=f'Tier {tier}')
 
+    @commands.command(
+        name='last',
+        brief='Shows last# shats'
+    )
+    async def last(self, ctx: commands.Context, *, player: Optional[str] = None):
+        await self._stats(ctx=ctx, player_text=player, title='Last 10', start=-10)
+    
+    @commands.command(
+        name='mid',
+        brief='Shows mid#-# stats'
+    )
+    async def mid(self, ctx: commands.Context):
+        await ctx.send('Command mid`#`-`#`')
+    
+    @commands.command(
+        name='first',
+        brief='Shows first# stats'
+    )
+    async def first(self, ctx: commands.Context, *, player: Optional[str] = None):
+        await self._stats(ctx=ctx, player_text=player, title='First 10', start=1, stop=11)
+
     @commands.Cog.listener(name='on_command_error')
     async def additional_commands(self, ctx: commands.Context, error):
 
