@@ -311,7 +311,16 @@ class LoungeCog(commands.Cog, name='Lounge'):
         tier = tier.upper()
         await self._lastmatch(ctx, player_text=player, filter_func=lambda c: c.tier == tier)
 
-    async def _stats(self, ctx: commands.Context, player_text: Optional[str] = None, season: Optional[int] = None, filter_func=None, title=''):
+    async def _stats(
+        self,
+        ctx: commands.Context,
+        player_text: Optional[str] = None,
+        season: Optional[int] = None,
+        filter_func=None,
+        title='',
+        start: Optional[int] = None,
+        stop: Optional[int] = None
+    ):
         query = self.extract_query(ctx=ctx, player_text=player_text)
         if isinstance(query, int):
             details = await self.get_player_details(discord_id=query, season=season)
@@ -326,7 +335,7 @@ class LoungeCog(commands.Cog, name='Lounge'):
         if len(details.mmr_changes) <= 1:
             await ctx.send(f'Not Played: {details.name}')
             return
-        content = make_content(details=details, filter_func=filter_func, title=title)
+        content = make_content(details=details, filter_func=filter_func, title=title, start=start, stop=stop)
         if content is None:
             await ctx.send(f'{title} Not Played: {details.name}')
             return
@@ -368,22 +377,51 @@ class LoungeCog(commands.Cog, name='Lounge'):
 
     @commands.Cog.listener(name='on_command_error')
     async def additional_commands(self, ctx: commands.Context, error):
+
         if isinstance(error, commands.CommandNotFound):
             command = ctx.message.content[1:]
             command_name = command.split(maxsplit=1)[0]
             arg = command.replace(command_name, '', 1).strip()
+
+            async def to_int(text: str, title: str, positive=False) -> int:
+                try:
+                    n = int(text)
+                    if positive and n <= 0:
+                        raise ValueError
+                    return n
+                except Exception as e:
+                    if not text:
+                        await ctx.send(f'Provide {title}')
+                    else:
+                        await ctx.send(f'Invalid {title}: {text}')
+                    raise e
+
             if command_name.startswith('mmr'):
-                season = int(command_name[3:])
+                season = await to_int(text=command_name[3:], title='Season')
                 await self._mmr(ctx=ctx, players_text=arg, season=season)
                 return
+
             if command_name.startswith(('lastmatch', 'lm')):
-                count = int(command_name[2:]) if command_name.startswith('lm') else int(command_name[9:])
+                count = await to_int(
+                    text=command_name[2:] if command_name.startswith('lm') else command_name[9:],
+                    title='Count'
+                )
                 await self._lastmatch(ctx=ctx, count=count, player_text=arg)
                 return
+
             if command_name.startswith(('formatlastmatch', 'flm')):
-                count = int(command_name[3:]) if command_name.startswith('flm') else int(command_name[15:])
+                count = await to_int(
+                    text=command_name[3:] if command_name.startswith('flm') else command_name[15:],
+                    title='Count'
+                )
                 args = list(arg.split(maxsplit=1))
-                format = int(args[0])
+                if not args:
+                    await ctx.send('Provide Format')
+                    return
+                format = await to_int(
+                    text=args[0],
+                    title='Format'
+                )
                 if format not in {1, 2, 3, 4, 6}:
                     await ctx.send(f'Invalid Format: {format}')
                     return
@@ -391,21 +429,42 @@ class LoungeCog(commands.Cog, name='Lounge'):
                 player_text = args[1] if len(args) == 2 else ''
                 await self._lastmatch(ctx=ctx, player_text=player_text, count=count, filter_func=lambda c: c.num_teams == num_teams)
                 return
+
             if command_name.startswith(('tierlastmatch', 'tlm')):
-                count = int(command_name[3:]) if command_name.startswith('tlm') else int(command_name[13:])
+                count = await to_int(
+                    text=command_name[3:] if command_name.startswith('tlm') else command_name[13:],
+                    title='Count'
+                )
                 args = list(arg.split(maxsplit=1))
+                if not args:
+                    await ctx.send('Provide Tier')
+                    return
                 tier = args[0].upper()
                 player_text = args[1] if len(args) == 2 else ''
                 await self._lastmatch(ctx=ctx, player_text=player_text, count=count, filter_func=lambda c: c.tier == tier)
                 return
+
             if command_name.startswith(('stats', 'ls')):
-                season = int(command_name[2:] if command_name.startswith('ls') else command_name[5:])
+                season = await to_int(
+                    text=command_name[2:] if command_name.startswith('ls') else command_name[5:],
+                    title='Season'
+                )
                 await self._stats(ctx=ctx, player_text=arg, season=season)
                 return
+
             if command_name.startswith(('fs', 'formatstats')):
-                season = int(command_name[2:] if command_name.startswith('fs') else command_name[11:])
+                season = await to_int(
+                    text=command_name[2:] if command_name.startswith('fs') else command_name[11:],
+                    title='Season'
+                )
                 args = list(arg.split(maxsplit=1))
-                format = int(args[0])
+                if not args:
+                    await ctx.send('Provide Format')
+                    return
+                format = await to_int(
+                    text=args[0],
+                    title='Format'
+                )
                 if format not in {1, 2, 3, 4, 6}:
                     await ctx.send(f'Invalid Format: {format}')
                     return
@@ -417,11 +476,55 @@ class LoungeCog(commands.Cog, name='Lounge'):
                 player_text = args[1] if len(args) == 2 else ''
                 await self._stats(ctx=ctx, player_text=player_text, season=season, filter_func=lambda c: c.num_teams == num_teams, title=title)
                 return
+
             if command_name.startswith(('ts', 'tierstats')):
-                season = int(command_name[2:] if command_name.startswith('ts') else command_name[9:])
+                season = await to_int(
+                    text=command_name[2:] if command_name.startswith('ts') else command_name[9:],
+                    title='Season'
+                )
                 args = list(arg.split(maxsplit=1))
+                if not args:
+                    await ctx.send('Provide Tier')
+                    return
                 tier = args[0].upper()
                 player_text = args[1] if len(args) == 2 else ''
                 await self._stats(ctx=ctx, player_text=player_text, season=season, filter_func=lambda c: c.tier == tier, title=f'Tier {tier}')
                 return
+
+            if command_name.startswith('last'):
+                count = await to_int(
+                    text=command_name[4:],
+                    title='Count',
+                    positive=True
+                )
+                await self._stats(ctx=ctx, player_text=arg, title=f'Last {count}', start=-count)
+                return
+            
+            if command_name.startswith('mid'):
+                if '-' not in command_name:
+                    await ctx.send('Command mid`#`-`#`')
+                    return
+                c1_text, c2_text = command_name[3:].split('-', maxsplit=1)
+                count1 = await to_int(
+                    text=c1_text,
+                    title='Count 1',
+                    positive=True
+                )
+                count2 = await to_int(
+                    text=c2_text,
+                    title='Count 2',
+                    positive=True
+                )
+                await self._stats(ctx=ctx, player_text=arg, title=f'Mid {count1} - {count2}', start=count1, stop=count2+1)
+                return
+
+            if command_name.startswith('first'):
+                count = await to_int(
+                    text=command_name[5:],
+                    title='Count',
+                    positive=True
+                )
+                await self._stats(ctx=ctx, player_text=arg, title=f'Last {count}', start=1, stop=count+1)
+                return
+
         raise error

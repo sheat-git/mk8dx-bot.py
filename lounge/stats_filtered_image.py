@@ -5,10 +5,10 @@ import numpy as np
 
 
 def make(deltas: list[list[int]]) -> File:
-    xdata = [0]
-    ydata = [0]
+    xdata = []
+    ydata = []
     for i, l in enumerate(deltas):
-        xdata.extend([i+1 + j/len(l) for j in range(len(l))])
+        xdata.extend([i + j/len(l) for j in range(len(l))])
         ydata.extend(l)
     fig = plt.figure(facecolor='#2f3136', tight_layout=True, figsize=(5, 2))
     ax = fig.add_subplot(111, xmargin=0, facecolor='#2f3136')
