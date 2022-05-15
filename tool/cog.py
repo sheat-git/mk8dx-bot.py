@@ -175,8 +175,24 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%mmr (プレイヤー)``` `%mmr4`でシーズン4のMMRを表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
+        name='stats',
+        value='```%stats (プレイヤー)``` `%stats4`でシーズン4のstatsを表示。`'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
         name='集計表',
         value='```%table <id>```',
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='first',
+        value='```%first#``` `%first10`で最初の10模擬のstatsを表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='mid',
+        value='```%mid#-# (プレイヤー)``` `%mid10-20`で中間10-20模擬のstatsを表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='last',
+        value='```%last# (プレイヤー)``` `%last10`で最新10模擬のstatsを表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
         name='最新の集計表',
@@ -185,11 +201,11 @@ class ToolCog(commands.Cog, name='Tool'):
     )
     INSTRUCTION_PAGES_JA[2].add_field(
         name='最新の集計表（形式指定）',
-        value='```%flm (プレイヤー)``` `%flm2`で最新の2v2の集計表を表示。'
+        value='```%flm <形式> (プレイヤー)``` `%flm2 6`で最新から2番目の6v6の集計表を表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
         name='最新の集計表（Tier指定）',
-        value='```%tlm (プレイヤー)``` `%tlmsq`で最新のSQの集計表を表示。'
+        value='```%tlm <tier> (プレイヤー)``` `%tlm3 sq`で最新から3番目のSQの集計表を表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
         name=':warning: コマンド内の`(プレイヤー)`',
@@ -359,8 +375,24 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%mmr (player)``` `%mmr4` shows mmr in the S4.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
+        name='stats',
+        value='```%stats (player)``` `%stats4` shows stats in the S4.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
         name='Table',
         value='```%table <id>```',
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='first',
+        value='```%first# (player)``` `%first10` shows first 10 stats.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='mid',
+        value='```%mid#-# (player)``` `%mid10-20` shows midium 10-20 stats.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='last',
+        value='```%last# (player)``` `%last10` shows last 10 stats.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
         name='The Latest Table',
@@ -369,11 +401,11 @@ class ToolCog(commands.Cog, name='Tool'):
     )
     INSTRUCTION_PAGES_EN[2].add_field(
         name='The Latest Table (in the format)',
-        value='```%flm (player)``` `%flm2` shows the latest table in 2v2.'
+        value='```%flm <format> (player)``` `%flm2 6` shows second latest table in 6v6.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
         name='The Latest Table (in the tier)',
-        value='```%tlm (player)``` `%tlmsq` shows the latest table in tier SQ.'
+        value='```%tlm <tier> (player)``` `%tlm3 sq` shows third latest table in tier SQ.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
         name=':warning: `(player)` in Commands',
