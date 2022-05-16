@@ -175,24 +175,33 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%mmr (プレイヤー)``` `%mmr4`でシーズン4のMMRを表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
-        name='stats',
-        value='```%stats (プレイヤー)``` `%stats4`でシーズン4のstatsを表示。`'
-    )
-    INSTRUCTION_PAGES_JA[2].add_field(
         name='集計表',
         value='```%table <id>```',
     )
     INSTRUCTION_PAGES_JA[2].add_field(
-        name='first',
-        value='```%first#``` `%first10`で最初の10模擬のstatsを表示。'
+        name='Stats',
+        value='```%stats (プレイヤー)``` `%stats4`でシーズン4のstatsを表示。',
+        inline=False
     )
     INSTRUCTION_PAGES_JA[2].add_field(
-        name='mid',
+        name='First',
+        value='```%first# (プレイヤー)``` `%first10`で最初の10模擬のstatsを表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='Mid',
         value='```%mid#-# (プレイヤー)``` `%mid10-20`で中間10-20模擬のstatsを表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
-        name='last',
+        name='Last',
         value='```%last# (プレイヤー)``` `%last10`で最新10模擬のstatsを表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='Format Stats',
+        value='```%fs <形式> (プレイヤー)``` `%fs4 2`でシーズン4の2v2のstatsを表示。'
+    )
+    INSTRUCTION_PAGES_JA[2].add_field(
+        name='Tier Stats',
+        value='```%ts <tier> (プレイヤー)``` `%ts4 sq`でシーズン4のSQのstatsを表示。'
     )
     INSTRUCTION_PAGES_JA[2].add_field(
         name='最新の集計表',
@@ -210,7 +219,7 @@ class ToolCog(commands.Cog, name='Tool'):
     INSTRUCTION_PAGES_JA[2].add_field(
         name=':warning: コマンド内の`(プレイヤー)`',
         value='指定がなければ、コマンド送信者のものを表示。\n'
-        '複数指定はコマンドによって可能。方法は`,`区切り。メンションとラウンジ名の混同OK。',
+        '複数指定はコマンドによって可能。方法はコンマ(`,`)区切り。メンションとラウンジ名の混同OK。',
         inline=False
     )
     INSTRUCTION_PAGES_JA[3].add_field(
@@ -229,7 +238,7 @@ class ToolCog(commands.Cog, name='Tool'):
     INSTRUCTION_PAGES_JA[3].add_field(
         name=':warning: コマンド内の`(プレイヤー)`',
         value='指定がなければ、コマンド送信者のものを表示。\n'
-        '複数指定はコマンドによって可能。方法は`,`区切り。メンションとラウンジ名の混同OK。',
+        '複数指定はコマンドによって可能。方法はコンマ(`,`)区切り。メンションとラウンジ名の混同OK。',
         inline=False
     )
     INSTRUCTION_PAGES_JA[3].add_field(
@@ -375,24 +384,33 @@ class ToolCog(commands.Cog, name='Tool'):
         value='```%mmr (player)``` `%mmr4` shows mmr in the S4.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
-        name='stats',
-        value='```%stats (player)``` `%stats4` shows stats in the S4.'
-    )
-    INSTRUCTION_PAGES_EN[2].add_field(
         name='Table',
         value='```%table <id>```',
     )
     INSTRUCTION_PAGES_EN[2].add_field(
-        name='first',
+        name='Stats',
+        value='```%stats (player)``` `%stats4` shows stats of the S4.',
+        inline=False
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='First',
         value='```%first# (player)``` `%first10` shows first 10 stats.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
-        name='mid',
+        name='Mid',
         value='```%mid#-# (player)``` `%mid10-20` shows midium 10-20 stats.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
-        name='last',
+        name='Last',
         value='```%last# (player)``` `%last10` shows last 10 stats.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='Format Stats',
+        value='```%fs <format> (player)``` `%fs4 2` show 2v2 stats of the S4.'
+    )
+    INSTRUCTION_PAGES_EN[2].add_field(
+        name='Tier Stats',
+        value='```%ts <tier> (player)``` `%ts4 sq` shows SQ stats of the S4.'
     )
     INSTRUCTION_PAGES_EN[2].add_field(
         name='The Latest Table',
@@ -410,7 +428,7 @@ class ToolCog(commands.Cog, name='Tool'):
     INSTRUCTION_PAGES_EN[2].add_field(
         name=':warning: `(player)` in Commands',
         value='If not specified, show the command sender\'s.\n'
-        'Multiple specifications are possible depending on the command. The method is `,` delimited. Mention and lounge name confusion is OK.',
+        'Multiple specifications are possible depending on the command. The method is comma(`,`) delimited. Mention and lounge name confusion is OK.',
         inline=False
     )
     INSTRUCTION_PAGES_EN[3].add_field(
@@ -429,7 +447,7 @@ class ToolCog(commands.Cog, name='Tool'):
     INSTRUCTION_PAGES_EN[3].add_field(
         name=':warning: `(player)` in Commands',
         value='If not specified, show the command sender\'s.\n'
-        'Multiple specifications are possible depending on the command. The method is `,` delimited. Mention and lounge name confusion is OK.',
+        'Multiple specifications are possible depending on the command. The method is comma(`,`) delimited. Mention and lounge name confusion is OK.',
         inline=False
     )
     INSTRUCTION_PAGES_EN[3].add_field(
