@@ -126,8 +126,8 @@ def _make_content(details: PlayerDetails) -> tuple[Embed, Optional[File]]:
 def _make_content_filtered(details: PlayerDetails, filter_func, title: str) -> Optional[tuple[Embed, Optional[File]]]:
 
     # organize data
-    ids = [None]
-    mmr_deltas = [[0]]
+    ids = []
+    mmr_deltas = []
     top_score = -1
     top_score_table_id = None
     wins = 0
@@ -255,7 +255,7 @@ def _make_content_filtered(details: PlayerDetails, filter_func, title: str) -> O
         name='Largest Loss',
         value=largest_loss_value
     )
-    file = make_filtered(deltas=mmr_deltas)
+    file = make_filtered(deltas=[[0], *mmr_deltas])
     embed.set_image(url='attachment://stats.png')
     return embed, file
 
