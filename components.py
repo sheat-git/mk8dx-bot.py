@@ -1,6 +1,6 @@
 from typing import Sequence, Union, Any, TypeVar, Optional
 import os
-from discord import ApplicationContext, File, AllowedMentions, GuildSticker, Interaction, Message, MessageReference, StickerItem, WebhookMessage
+from discord import ApplicationContext, EmbedField, File, AllowedMentions, GuildSticker, Interaction, Message, MessageReference, StickerItem, WebhookMessage
 from discord.abc import Messageable
 from discord.colour import Colour
 from discord.embeds import Embed, _EmptyEmbed, EmptyEmbed
@@ -24,7 +24,8 @@ class ColoredEmbed(Embed):
         type: EmbedType = "rich",
         url: MaybeEmptyEmbed[Any] = EmptyEmbed,
         description: MaybeEmptyEmbed[Any] = EmptyEmbed,
-        timestamp: Optional[datetime.datetime] = None
+        timestamp: Optional[datetime.datetime] = None,
+        fields: Optional[list[EmbedField]] = None,
     ):
         super().__init__(
             colour=color,
@@ -32,7 +33,8 @@ class ColoredEmbed(Embed):
             type=type,
             url=url,
             description=description,
-            timestamp=timestamp
+            timestamp=timestamp,
+            fields=fields
         )
 
 
