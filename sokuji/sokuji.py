@@ -150,11 +150,11 @@ class Sokuji:
             elif self.embed.title.startswith('Archive'):
                 self.embed.title = self.embed.title.replace('Archive', '即時アーカイブ', 1)
             for i in range(len(self.embed.fields)):
-                if self.embed._fields[i]['name'].split(maxsplit=1)[0].isdecimal() and '-' in self.embed._fields[i]['name']:
-                    track = Track.from_nick(self.embed._fields[i]['name'].split()[-1])
+                if self.embed._fields[i].name.split(maxsplit=1)[0].isdecimal() and '-' in self.embed._fields[i].name:
+                    track = Track.from_nick(self.embed._fields[i].name.split()[-1])
                     if track is None:
                         continue
-                    self.embed._fields[i]['name'] = self.embed._fields[i]['name'].replace(f' {track.abbr}', f' {track.abbr_ja}')
+                    self.embed._fields[i].name = self.embed._fields[i].name.replace(f' {track.abbr}', f' {track.abbr_ja}')
             if self.embed.footer:
                 self.embed._footer['text'] = self.embed._footer['text'].replace('Updating banner', 'バナー更新')
             return
@@ -163,11 +163,11 @@ class Sokuji:
         elif self.embed.title.startswith('即時アーカイブ'):
             self.embed.title = self.embed.title.replace('即時アーカイブ', 'Archive', 1)
         for i in range(len(self.embed.fields)):
-            if self.embed._fields[i]['name'].split(maxsplit=1)[0].isdecimal() and '-' in self.embed._fields[i]['name']:
-                track = Track.from_nick(self.embed._fields[i]['name'].split()[-1])
+            if self.embed._fields[i].name.split(maxsplit=1)[0].isdecimal() and '-' in self.embed._fields[i].name:
+                track = Track.from_nick(self.embed._fields[i].name.split()[-1])
                 if track is None:
                     continue
-                self.embed._fields[i]['name'] = self.embed._fields[i]['name'].replace(track.abbr_ja, track.abbr)
+                self.embed._fields[i].name = self.embed._fields[i].name.replace(track.abbr_ja, track.abbr)
         if self.embed.footer:
             self.embed._footer['text'] = self.embed._footer['text'].replace('バナー更新', 'Updating banner')
 
@@ -191,14 +191,14 @@ class Sokuji:
             race_num = self.race_num
         race_num_text = str(race_num)
         for i in range(len(self.embed.fields)):
-            if self.embed._fields[i]['name'].split(maxsplit=1)[0] == race_num_text:
+            if self.embed._fields[i].name.split(maxsplit=1)[0] == race_num_text:
                 if track is None:
                     name = race_num_text
                 elif self.locale == Locale.JA:
                     name = f'{race_num_text}  - {TrackEmoji(track.id)} {track.abbr_ja}'
                 else:
                     name = f'{race_num_text}  - {TrackEmoji(track.id)} {track.abbr}'
-                self.embed._fields[i]['name'] = name
+                self.embed._fields[i].name = name
                 return True
         return False
 
@@ -209,14 +209,14 @@ class Sokuji:
         if not race.is_valid():
             return False
         for i in range(len(self.embed.fields)):
-            if self.embed._fields[i]['name'].split(maxsplit=1)[0] == race_num_text:
+            if self.embed._fields[i].name.split(maxsplit=1)[0] == race_num_text:
                 scores_dif = []
                 for old, new in zip(
-                    Sokuji.text_to_scores(text=self.embed._fields[i]['value'].split('` | `', maxsplit=1)[0][1:]),
+                    Sokuji.text_to_scores(text=self.embed._fields[i].value.split('` | `', maxsplit=1)[0][1:]),
                     race.scores
                 ):
                     scores_dif.append(-old+new)
-                self.embed._fields[i]['value'] = f'`{Sokuji.scores_to_text(scores=race.scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`'
+                self.embed._fields[i].value = f'`{Sokuji.scores_to_text(scores=race.scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`'
                 self.dif_update(sum_scores_dif=scores_dif, left_race_num_dif=0)
                 return True
         return False
@@ -231,12 +231,12 @@ class Sokuji:
             text = self.embed.fields[i].name.split(maxsplit=1)[0]
             if text.isdecimal():
                 _field = self.embed._fields.pop(i)
-                scores = Sokuji.text_to_scores(text=_field['value'].split('` | `', maxsplit=1)[0][1:])
+                scores = Sokuji.text_to_scores(text=_field.value.split('` | `', maxsplit=1)[0][1:])
                 self.dif_update(sum_scores_dif=list(map(lambda s: -s, scores)), left_race_num_dif=1)
                 return True
             if text in {'Repick', 'Penalty'}:
                 _field = self.embed._fields.pop(i)
-                scores = Sokuji.text_to_scores(text=_field['value'][1:-1])
+                scores = Sokuji.text_to_scores(text=_field.value[1:-1])
                 self.dif_update(sum_scores_dif=list(map(lambda s: -s, scores)), left_race_num_dif=0)
                 return True
         return False
@@ -454,7 +454,7 @@ class SubSokuji:
     @tags.setter
     def tags(self, tags: list[str]):
         for i in range(min(len(tags), len(self.embed._fields))):
-            self.embed._fields[i]['name'] = tags[i]
+            self.embed._fields[i].name = tags[i]
 
     @property
     def ranks(self) -> list[Rank]:
@@ -485,13 +485,13 @@ class SubSokuji:
     def add_text(self, text: str) -> None:
         ranks = Rank.get_ranks_from_text(text=text, format=self.format, ranks=self.ranks)
         for i in range(len(ranks)):
-            if not 'rank' in self.embed._fields[i]['value']:
-                self.embed._fields[i]['value'] = SubSokuji.rank_to_text(rank=ranks[i])
+            if not 'rank' in self.embed._fields[i].value:
+                self.embed._fields[i].value = SubSokuji.rank_to_text(rank=ranks[i])
 
     def back(self) -> bool:
         for i in range(-1, -len(self.embed.fields)-1, -1):
-            if 'rank' in self.embed._fields[i]['value']:
-                self.embed._fields[i]['value'] = 'score : `0`'
+            if 'rank' in self.embed._fields[i].value:
+                self.embed._fields[i].value = 'score : `0`'
                 return True
         return False
 
@@ -504,7 +504,7 @@ class SubSokuji:
     @staticmethod
     def rank_to_text(rank: Rank) -> str:
         return f'score : `{rank.score}` | rank : `{",".join(map(str, rank.data))}`'
-    
+
     @staticmethod
     def text_to_rank(text: str) -> Rank:
         return Rank(data=list(map(int, text.split('rank : `', maxsplit=1)[-1][:-1].split(','))))
