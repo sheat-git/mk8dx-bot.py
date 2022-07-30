@@ -49,7 +49,7 @@ class TrackCog(commands.Cog, name='Track'):
             description=f'{track.full_name}\n{track.full_name_ja}'
         )
         if track.id < 56:
-            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/{track.id}.jpg')
+            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/1.2/{track.id}.jpg')
         embed.set_footer(text='Map: © Mario Kart Blog')
         await message.channel.send(embed=embed)
 
