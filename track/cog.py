@@ -1,4 +1,5 @@
-from components import ColoredEmbed as Embed
+from typing import Optional
+from components import BotMessage, ColoredEmbed as Embed
 from discord import Message
 from discord.ext import commands
 from mk8dx import Track
@@ -7,43 +8,23 @@ from mk8dx import Track
 class TrackCog(commands.Cog, name='Track'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot: commands.Bot = bot
-
-    @commands.command(name='nicks', aliases=['nick'], brief='Shows all registered nicknames')
-    async def get_nicks(self, ctx: commands.Context, nick: str):
+    
+    def track_info(self, nick: str, include_joke: bool = False) -> Optional[BotMessage]:
         track = Track.from_nick(nick)
         if track is None:
-            await ctx.send(f'Track Not Found: {nick}')
-            return
-        embed = Embed(
-            title=f'{track.abbr} {track.abbr_ja}',
-            description='\n'.join(track.nicks)
-        )
-        await ctx.send(embed=embed)
-
-    @commands.Cog.listener(name='on_message')
-    async def get_track(self, message: Message):
-        if message.author.bot:
-            return
-        track = Track.from_nick(message.content)
-
-        if track is None:
-
+            if not include_joke:
+                return
             # my team HαM's joke
-            if message.guild is not None and message.guild.id == 899957283230994442:
-                if message.content == 'どかんがどっかーん':
-                    track = Track.BPP
-                elif message.content in {'きらーうらいか', 'キラー裏イカ'}:
-                    track = Track.DCL
-                elif message.content == 'いるかはいるか':
-                    track = Track.DS
-                elif message.content == 'はむで試行回数をこなしすぎるコース':
-                    track = Track.RMP
-                else:
-                    return
-
+            elif nick == 'どかんがどっかーん':
+                track = Track.BPP
+            elif nick in {'きらーうらいか', 'キラー裏イカ'}:
+                track = Track.DCL
+            elif nick in 'いるかはいるか':
+                track = Track.DS
+            elif nick == 'はむで試行回数をこなしすぎるコース':
+                track = Track.RMP
             else:
                 return
-
         embed = Embed(
             title=f'{track.abbr} {track.abbr_ja}',
             description=f'{track.full_name}\n{track.full_name_ja}'
@@ -51,7 +32,29 @@ class TrackCog(commands.Cog, name='Track'):
         if track.id < 56:
             embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/1.2/{track.id}.jpg')
         embed.set_footer(text='Map: © Mario Kart Blog')
-        await message.channel.send(embed=embed)
+        return BotMessage(embed=embed)
+
+    def nicks(self, nick: str) -> BotMessage:
+        track = Track.from_nick(nick)
+        if track is None:
+            return BotMessage(f'Track Not Found: {nick}')
+        return BotMessage(embed=Embed(
+            title=f'{track.abbr} {track.abbr_ja}',
+            description='\n'.join(sorted(track.nicks))
+        ))
+
+    @commands.command(name='nicks', aliases=['nick'], brief='Shows all registered nicknames')
+    async def send_nicks(self, ctx: commands.Context, nick: str):
+        await self.nicks(nick=nick).send(msg=ctx)
+
+    @commands.Cog.listener(name='on_message')
+    async def send_track_info(self, message: Message):
+        if message.author.bot:
+            return
+        is_ham = (message.guild is not None and message.guild.id == 899957283230994442)
+        msg = self.track_info(nick=message.content, include_joke=is_ham)
+        if msg is not None:
+            await msg.send(message.channel)
 
     # not needed
     # existed only for joke
