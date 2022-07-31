@@ -28,8 +28,6 @@ async def update_activity():
 @bot.event
 async def on_ready():
     print('bot ready.')
-    TrackEmoji.setup(bot)
-    TrackCog.setup(bot)
     await update_activity()
 
 @bot.event

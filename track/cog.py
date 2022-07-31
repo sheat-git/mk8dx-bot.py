@@ -4,10 +4,28 @@ from discord import Message
 from discord.ext import commands
 from mk8dx import Track
 
+from track.emoji import TrackEmoji
+
 
 class TrackCog(commands.Cog, name='Track'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot: commands.Bot = bot
+    
+    @commands.Cog.listener('on_ready')
+    async def setup(self):
+        TrackEmoji.setup(self.bot)
+        # my old team BP's joke
+        if self.bot.user.id == 810319965164535848:
+            Track.RMP.nicks.add('seimei')
+            Track.TH.nicks.add('ｾｲﾒｲ')
+            Track.RMMM.nicks.add('ﾜﾀｶﾞｼ')
+            Track.SA.nicks.update({'dra', 'ﾄﾞﾗ'})
+            Track.DEA.nicks.update({'kichi', 'ｷﾁ'})
+            Track.DBP.nicks.update({'kami', 'kami track', 'ｵﾐｸｼﾞｺｰｽ'})
+            Track.DWGM.nicks.update({'gomi', 'gomi track'})
+            Track.DBB.nicks.add('ﾓｻﾞﾋﾞｰ')
+            Track.RDKJ.nicks.add('jk')
+            Track.CC.nicks.update({'新潟県', 'ﾆｲｶﾞﾀｹﾝ'})
     
     def track_info(self, nick: str, include_joke: bool = False) -> Optional[BotMessage]:
         track = Track.from_nick(nick)
@@ -57,20 +75,3 @@ class TrackCog(commands.Cog, name='Track'):
         msg = self.track_info(nick=message.content, include_joke=is_ham)
         if msg is not None:
             await msg.send(message.channel)
-
-    # not needed
-    # existed only for joke
-    @staticmethod
-    def setup(bot: commands.Bot):
-        # my old team BP's joke
-        if bot.user.id == 810319965164535848:
-            Track.RMP.nicks.add('seimei')
-            Track.TH.nicks.add('ｾｲﾒｲ')
-            Track.RMMM.nicks.add('ﾜﾀｶﾞｼ')
-            Track.SA.nicks.update({'dra', 'ﾄﾞﾗ'})
-            Track.DEA.nicks.update({'kichi', 'ｷﾁ'})
-            Track.DBP.nicks.update({'kami', 'kami track', 'ｵﾐｸｼﾞｺｰｽ'})
-            Track.DWGM.nicks.update({'gomi', 'gomi track'})
-            Track.DBB.nicks.add('ﾓｻﾞﾋﾞｰ')
-            Track.RDKJ.nicks.add('jk')
-            Track.CC.nicks.update({'新潟県', 'ﾆｲｶﾞﾀｹﾝ'})
