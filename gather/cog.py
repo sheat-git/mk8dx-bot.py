@@ -10,7 +10,7 @@ class GatherCog(commands.Cog, name='Gather'):
         aliases=['c', 'C'],
         brief='Can play in Gathering'
     )
-    async def command_can(self, ctx: commands.Context, *hours: list[str]):
+    async def command_can(self, ctx: commands.Context):
         await ctx.send(
             'This command is under development for Gather.\n'
             'Use `%v` to start Sokuji instead.\n'
@@ -23,7 +23,7 @@ class GatherCog(commands.Cog, name='Gather'):
         aliases=['s'],
         brief='Substitute for Gathering'
     )
-    async def command_sub(self, ctx: commands.Context, *hours: list[str]):
+    async def command_sub(self, ctx: commands.Context):
         return
     
     @commands.command(
@@ -31,7 +31,7 @@ class GatherCog(commands.Cog, name='Gather'):
         aliases=['rc', 'r', 'm'],
         brief='May play in Gathering'
     )
-    async def command_tmpcan(self, ctx: commands.Context, *hours: list[str]):
+    async def command_tmpcan(self, ctx: commands.Context):
         await ctx.send(
             'This command is under development for Gather.\n'
             'Use `%rslt` to make result image instead.\n'
