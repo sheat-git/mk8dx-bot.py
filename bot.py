@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 from sokuji.cog import SokujiCog
 from track.cog import TrackCog
-from track.emoji import TrackEmoji
 from tool.cog import ToolCog
 from dev.cog import DevCog
 from lounge.cog import LoungeCog
