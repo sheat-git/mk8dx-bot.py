@@ -1,14 +1,38 @@
-from io import BytesIO
+import datetime
+import traceback
+from io import BytesIO, StringIO
 from typing import Optional
 import json
 import discord
-from discord import Embed
+from discord import TextChannel
 from discord.ext import commands
+
+from components import ColoredEmbed as Embed
 
 
 class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
     def __init__(self, bot: commands.Bot):
         self.bot: commands.Bot = bot
+        self.LOG_CHANNEL: TextChannel = None
+    
+    @commands.Cog.listener(name='on_ready')
+    async def setup(self):
+        self.LOG_CHANNEL = self.bot.get_channel(1003228025774682122)
+    
+    async def send_error(self, error: Exception):
+        if isinstance(error, commands.CommandNotFound):
+            return
+        embed = Embed(
+            title=str(type(error)),
+            description=f'```{error}```'
+        )
+        embed.set_footer(text=f'UTC: {datetime.datetime.utcnow()}')
+        binary = StringIO()
+        traceback.print_exception(error, file=binary)
+        binary.seek(0)
+        file = discord.File(fp=binary, filename='traceback.txt')
+        binary.close()
+        await self.LOG_CHANNEL.send(embed=embed, file=file)
     
     async def embed_to_json(self, sender: discord.abc.Messageable, fetcher: discord.abc.Messageable, message_id: int, embed_index: int):
         message = self.bot.get_message(message_id)
@@ -21,6 +45,10 @@ class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
         file = discord.File(fp=binary, filename='embed.json')
         binary.close()
         await sender.send(file=file)
+    
+    @commands.Cog.listener(name='on_command_error')
+    async def catch_error(self, ctx: commands.Context, error: Exception):
+        await self.send_error(error)
     
     @commands.command(
         name='jsonM',
