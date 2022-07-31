@@ -40,7 +40,7 @@ class TrackCog(commands.Cog, name='Track'):
                 track = Track.BPP
             elif nick in {'きらーうらいか', 'キラー裏イカ'}:
                 track = Track.DCL
-            elif nick in 'いるかはいるか':
+            elif nick == 'いるかはいるか':
                 track = Track.DS
             elif nick == 'はむで試行回数をこなしすぎるコース':
                 track = Track.RMP
