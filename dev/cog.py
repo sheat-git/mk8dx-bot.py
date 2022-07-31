@@ -4,11 +4,14 @@ from io import BytesIO, StringIO
 from typing import Optional
 import json
 import discord
-from discord import TextChannel
+from discord import EmbedField, TextChannel
 from discord.ext import commands
+from discord.utils import format_dt
 
 from components import ColoredEmbed as Embed
 
+
+LOG_CHANNEL_ID = 1003228025774682122
 
 class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
     def __init__(self, bot: commands.Bot):
@@ -17,16 +20,27 @@ class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
     
     @commands.Cog.listener(name='on_ready')
     async def setup(self):
-        self.LOG_CHANNEL = self.bot.get_channel(1003228025774682122)
+        self.LOG_CHANNEL = self.bot.get_channel(LOG_CHANNEL_ID)
     
-    async def send_error(self, error: Exception):
+    async def log_error(self, command: str, error: Exception):
         if isinstance(error, commands.CommandNotFound):
             return
+        dt = datetime.datetime.utcnow()
         embed = Embed(
             title=str(type(error)),
-            description=f'```{error}```'
+            description=f'```{error}```',
+            fields=[
+                EmbedField(
+                    name='Command',
+                    value=f'```{command}```',
+                    inline=False
+                ),
+                EmbedField(
+                    name='Errored on',
+                    value=format_dt(dt, 'd') + format_dt(dt, 'T')
+                )
+            ]
         )
-        embed.set_footer(text=f'UTC: {datetime.datetime.utcnow()}')
         binary = StringIO()
         traceback.print_exception(error, file=binary)
         binary.seek(0)
@@ -48,8 +62,8 @@ class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
     
     @commands.Cog.listener(name='on_command_error')
     async def catch_error(self, ctx: commands.Context, error: Exception):
-        await self.send_error(error)
-    
+        await self.log_error(ctx.message.content, error)
+
     @commands.command(
         name='jsonM',
         aliases=['j', 'jm', 'json', 'jsonm']
