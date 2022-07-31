@@ -7,6 +7,9 @@ from mk8dx import Track
 from track.emoji import TrackEmoji
 
 
+SNEET_BOT_ID = 810319965164535848
+HAM_GUILD_ID = 899957283230994442
+
 class TrackCog(commands.Cog, name='Track'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot: commands.Bot = bot
@@ -15,7 +18,7 @@ class TrackCog(commands.Cog, name='Track'):
     async def setup(self):
         TrackEmoji.setup(self.bot)
         # my old team BP's joke
-        if self.bot.user.id == 810319965164535848:
+        if self.bot.user.id == SNEET_BOT_ID:
             Track.RMP.nicks.add('seimei')
             Track.TH.nicks.add('ｾｲﾒｲ')
             Track.RMMM.nicks.add('ﾜﾀｶﾞｼ')
@@ -71,7 +74,7 @@ class TrackCog(commands.Cog, name='Track'):
     async def send_track_info(self, message: Message):
         if message.author.bot:
             return
-        is_ham = (message.guild is not None and message.guild.id == 899957283230994442)
+        is_ham = (message.guild is not None and message.guild.id == HAM_GUILD_ID)
         msg = self.track_info(nick=message.content, include_joke=is_ham)
         if msg is not None:
             await msg.send(message.channel)
