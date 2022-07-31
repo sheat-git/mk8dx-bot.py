@@ -399,7 +399,9 @@ class LoungeCog(commands.Cog, name='Lounge'):
     @commands.Cog.listener(name='on_command_error')
     async def additional_commands(self, ctx: commands.Context, error):
 
-        if isinstance(error, commands.CommandNotFound):
+        if not isinstance(error, commands.CommandNotFound):
+            return
+        try:
             command = ctx.message.content[1:]
             command_name = command.split(maxsplit=1)[0]
             arg = command.replace(command_name, '', 1).strip()
@@ -547,5 +549,6 @@ class LoungeCog(commands.Cog, name='Lounge'):
                 )
                 await self._stats(ctx=ctx, player_text=arg, title=f'Last {count}', start=1, stop=count+1)
                 return
-
-        raise error
+        
+        except Exception as e:
+            await self.bot.cogs['Dev'].log_error(ctx.message.content, e)
