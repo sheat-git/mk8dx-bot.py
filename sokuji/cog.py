@@ -55,7 +55,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     
     @commands.command(
         name='sokuji',
-        aliases=['start', 'cal', 'c'],
+        aliases=['start', 'cal', 'versus', 'vs', 'v'],
         brief='Starts sokuji'
     )
     async def start(self, ctx, *tags):
@@ -63,7 +63,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     
     @commands.command(
         name='sokuji2',
-        aliases=['start2', 'cal2', 'c2'],
+        aliases=['start2', 'cal2', 'versus2', 'vs2', 'v2'],
         brief='Starts 2v2 sokuji'
     )
     async def start2(self, ctx, *tags):
@@ -71,7 +71,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.command(
         name='sokuji3',
-        aliases=['start3', 'cal3', 'c3'],
+        aliases=['start3', 'cal3', 'versus3', 'vs3', 'v3'],
         brief='Starts 3v3 sokuji'
     )
     async def start3(self, ctx, *tags):
@@ -79,7 +79,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.command(
         name='sokuji4',
-        aliases=['start4', 'cal4', 'c4'],
+        aliases=['start4', 'cal4', 'c4', 'versus4', 'vs4', 'v4'],
         brief='Starts 4v4 sokuji'
     )
     async def start4(self, ctx, *tags):
@@ -87,7 +87,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.command(
         name='sokuji6',
-        aliases=['start6', 'cal6', 'c6'],
+        aliases=['start6', 'cal6', 'versus6', 'vs6', 'v6'],
         brief='Starts 6v6 sokuji',
     )
     async def start6(self, ctx, *tags):
@@ -409,7 +409,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.command(
         name='result',
-        aliases=['r'],
+        aliases=['rslt'],
         brief='Generates result image'
     )
     async def make_result(self, ctx):

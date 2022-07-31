@@ -6,6 +6,7 @@ from track.cog import TrackCog
 from tool.cog import ToolCog
 from dev.cog import DevCog
 from lounge.cog import LoungeCog
+from gather.cog import GatherCog
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -16,7 +17,8 @@ for cog in {
     TrackCog,
     ToolCog,
     DevCog,
-    LoungeCog
+    LoungeCog,
+    GatherCog
 }:
     bot.add_cog(cog(bot))
 
