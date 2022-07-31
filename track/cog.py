@@ -66,12 +66,16 @@ class TrackCog(commands.Cog, name='Track'):
             description='\n'.join(sorted(track.nicks))
         ))
 
-    @commands.command(name='nicks', aliases=['nick'], brief='Shows all registered nicknames')
-    async def send_nicks(self, ctx: commands.Context, nick: str):
+    @commands.command(
+        name='nicks',
+        aliases=['nick'],
+        brief='Shows all registered nicknames'
+    )
+    async def command_nicks(self, ctx: commands.Context, nick: str):
         await self.nicks(nick=nick).send(msg=ctx)
 
     @commands.Cog.listener(name='on_message')
-    async def send_track_info(self, message: Message):
+    async def catch_track(self, message: Message):
         if message.author.bot:
             return
         is_ham = (message.guild is not None and message.guild.id == HAM_GUILD_ID)

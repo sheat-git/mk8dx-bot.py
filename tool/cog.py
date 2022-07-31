@@ -14,20 +14,20 @@ class ToolCog(commands.Cog, name='Tool'):
         self.bot: commands.Bot = bot
 
     @commands.command(name='sheat', aliases=['func', 'Func', 'FUNC', 'SHEAT', 'Sheat'], brief='Shows instruction pages')
-    async def instruction(self, ctx: commands.Context, locale: Optional[str] = None):
+    async def command_instruction(self, ctx: commands.Context, locale: Optional[str] = None):
         if locale == 'en':
             await self.instruction_en(ctx)
             return
         await self.instruction_ja(ctx)
         return
     
-    async def instruction_en(self, ctx: commands.Context):
+    async def command_instruction_en(self, ctx: commands.Context):
         await ctx.author.send('The author is Japanese. Please note that my English is poor.')
         await pages.Paginator(pages=self.INSTRUCTION_EMBEDS_EN).send(ctx, target=ctx.author)
         if not isinstance(ctx.channel, DMChannel):
             await ctx.reply('Sent to DM.')
 
-    async def instruction_ja(self, ctx: commands.Context):
+    async def command_instruction_ja(self, ctx: commands.Context):
         await ctx.author.send(r'If you want to see the English version, use `%sheat en` command.')
         await pages.Paginator(pages=self.INSTRUCTION_EMBEDS_JA).send(ctx, target=ctx.author)
         if not isinstance(ctx.channel, DMChannel):
@@ -56,8 +56,15 @@ class ToolCog(commands.Cog, name='Tool'):
             e = self.INSTRUCTION_EMBEDS_EN
         await pages.Paginator(pages=e).respond(ctx.interaction, ephemeral=True)
 
-    @commands.command(name='choose', aliases=['chs'], brief='Chooses one at random')
-    async def choose(self, ctx, *items):
+    @commands.command(
+        name='choose',
+        aliases=['chs'],
+        brief='Chooses one at random'
+    )
+    async def command_choose(self, ctx, *items):
+        if not items:
+            await ctx.send('Give Values')
+            return
         await ctx.send(random.choice(items))
 
 
