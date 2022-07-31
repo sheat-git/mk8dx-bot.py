@@ -25,4 +25,3 @@ for i in range(14):
         url = f'http://japan-mk.blog.jp/mk8dx.info-4/table/{id:02}.jpg'
         map = Image.open(io.BytesIO(requests.get(url).content))
         concat(cup, map).save(f'track/images/tracks/{i*4+j}.jpg')
-

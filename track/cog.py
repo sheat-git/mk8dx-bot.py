@@ -31,6 +31,8 @@ class TrackCog(commands.Cog, name='Track'):
         )
         if track.id < 56:
             embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/1.2/{track.id}.jpg')
+        else:
+            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/cups/{track.cup.id}.jpg')
         embed.set_footer(text='Map: © Mario Kart Blog')
         return BotMessage(embed=embed)
 
