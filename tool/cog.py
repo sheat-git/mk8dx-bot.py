@@ -16,9 +16,9 @@ class ToolCog(commands.Cog, name='Tool'):
     @commands.command(name='sheat', aliases=['func', 'Func', 'FUNC', 'SHEAT', 'Sheat'], brief='Shows instruction pages')
     async def command_instruction(self, ctx: commands.Context, locale: Optional[str] = None):
         if locale == 'en':
-            await self.instruction_en(ctx)
+            await self.command_instruction_en(ctx)
             return
-        await self.instruction_ja(ctx)
+        await self.command_instruction_ja(ctx)
         return
     
     async def command_instruction_en(self, ctx: commands.Context):
