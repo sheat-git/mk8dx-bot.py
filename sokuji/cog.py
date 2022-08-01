@@ -37,7 +37,11 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             tags = tags[:12//format]
         return tags, format
 
-    async def _start(self, ctx: commands.Context, tags: list[str], format: Optional[int]) -> Message:
+    async def _start(self, ctx: commands.Context, tags: str, format: Optional[int]) -> Message:
+        if not tags:
+            tags = []
+        else:
+            tags = list(tags.split())
         if ctx.guild is not None and ctx.channel.permissions_for(ctx.guild.me).use_external_emojis == False:
             asyncio.ensure_future(ctx.send(
                 'Please permit me to use external emojis. The display will be corrupted.\n'
@@ -58,7 +62,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         aliases=['start', 'cal', 'versus', 'vs', 'v'],
         brief='Starts sokuji'
     )
-    async def start(self, ctx, *tags):
+    async def start(self, ctx, *, tags=None):
         await self._start(ctx=ctx, tags=tags, format=None)
     
     @commands.command(
@@ -66,7 +70,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         aliases=['start2', 'cal2', 'versus2', 'vs2', 'v2'],
         brief='Starts 2v2 sokuji'
     )
-    async def start2(self, ctx, *tags):
+    async def start2(self, ctx, *, tags=None):
         await self._start(ctx=ctx, tags=tags, format=2)
 
     @commands.command(
@@ -74,7 +78,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         aliases=['start3', 'cal3', 'versus3', 'vs3', 'v3'],
         brief='Starts 3v3 sokuji'
     )
-    async def start3(self, ctx, *tags):
+    async def start3(self, ctx, *, tags=None):
         await self._start(ctx=ctx, tags=tags, format=3)
 
     @commands.command(
@@ -82,7 +86,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         aliases=['start4', 'cal4', 'c4', 'versus4', 'vs4', 'v4'],
         brief='Starts 4v4 sokuji'
     )
-    async def start4(self, ctx, *tags):
+    async def start4(self, ctx, *, tags=None):
         await self._start(ctx=ctx, tags=tags, format=4)
 
     @commands.command(
@@ -90,7 +94,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         aliases=['start6', 'cal6', 'versus6', 'vs6', 'v6'],
         brief='Starts 6v6 sokuji',
     )
-    async def start6(self, ctx, *tags):
+    async def start6(self, ctx, *, tags=None):
         await self._start(ctx=ctx, tags=tags, format=6)
 
     @commands.slash_command(
@@ -373,7 +377,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.command(
         name='removeBanner',
-        aliases=['removebanner', 'rb', 'rB', 'removeobs'],
+        aliases=['removebanner', 'rb', 'rB', 'removeobs', 'ro'],
         brief='Removes banner user'
     )
     async def remove_banner(self, ctx, members: commands.Greedy[Member]):
