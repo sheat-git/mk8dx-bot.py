@@ -163,5 +163,4 @@ cython_debug/
 test*.py
 
 # track images
-track/images/cups/*
-track/images/tracks/*
+track/images/*
