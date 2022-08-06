@@ -1,4 +1,8 @@
 def to_tag(name: str) -> str:
+    if name == '東工大マリオカートサークル':
+        return 'TT'
+    elif name == 'ハラスメント -HαM-':
+        return 'HαM'
     for word in ['team', 'mk']:
         if not word in name.lower():
             break
