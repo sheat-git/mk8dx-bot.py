@@ -1,16 +1,19 @@
-from typing import Sequence, Union, Any, TypeVar, Optional
+from __future__ import annotations
+
+from typing import Sequence, Union, Any, Optional, TypeVar, TYPE_CHECKING
 import os
 from discord import ApplicationContext, EmbedField, File, AllowedMentions, GuildSticker, Interaction, Message, MessageReference, StickerItem, WebhookMessage
 from discord.abc import Messageable
 from discord.colour import Colour
 from discord.embeds import Embed, _EmptyEmbed, EmptyEmbed
-from discord.types.embed import EmbedType
 from discord.ui import View
 import datetime
 
+if TYPE_CHECKING:
+    from discord.types.embed import EmbedType
+    T = TypeVar("T")
+    MaybeEmpty = Union[T, _EmptyEmbed]
 
-T = TypeVar("T")
-MaybeEmptyEmbed = Union[T, _EmptyEmbed]
 
 COLOR = Colour(int(os.environ['COLOR'], 0))
 
@@ -19,16 +22,16 @@ class ColoredEmbed(Embed):
     def __init__(
         self,
         *,
-        color: Union[int, Colour, _EmptyEmbed] = COLOR,
-        title: MaybeEmptyEmbed[Any] = EmptyEmbed,
+        color: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
+        title: MaybeEmpty[Any] = EmptyEmbed,
         type: EmbedType = "rich",
-        url: MaybeEmptyEmbed[Any] = EmptyEmbed,
-        description: MaybeEmptyEmbed[Any] = EmptyEmbed,
-        timestamp: Optional[datetime.datetime] = None,
+        url: MaybeEmpty[Any] = EmptyEmbed,
+        description: MaybeEmpty[Any] = EmptyEmbed,
+        timestamp: datetime.datetime = None,
         fields: Optional[list[EmbedField]] = None,
-    ):
+    ) -> None:
         super().__init__(
-            colour=color,
+            colour=COLOR if color is EmptyEmbed else color,
             title=title,
             type=type,
             url=url,
