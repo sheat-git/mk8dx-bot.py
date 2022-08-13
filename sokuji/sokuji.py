@@ -1,311 +1,429 @@
 from __future__ import annotations
+from typing import Optional, Sequence
 
-from typing import Optional, Any
+from discord import Embed, EmbedField
+from mk8dx import Track, Race
 
-from components import ColoredEmbed as Embed
-from discord import Message, Interaction
-from discord.abc import Messageable
-from discord.ui import View, Button
-from datetime import datetime, timedelta
-from mk8dx import Mogi, Race, Rank, Track
+from lang import Lang
+from components import BotMessage
+from sokuji.errors import *
 from track.emoji import TrackEmoji
-from locale_ import Locale
-from .firebase import update
 
-
-async def find(messageable: Messageable, user_id: int, include_ended=False) -> tuple[Optional[BotMessage], Optional[BotMessage], Optional[Track]]:
-    sokuji_message = None
-    subsokuji_message = None
-    track = None
-    async for message in messageable.history(after=datetime.now()-timedelta(minutes=30), oldest_first=False):
-        if message.author.id == user_id and message.embeds:
-            embed = message.embeds[0]
-            if Sokuji.embed_is_ended(embed=embed) and not include_ended:
-                break
-            elif Sokuji.embed_is_valid(embed=embed) or Sokuji.embed_is_ended(embed=embed) and include_ended:
-                sokuji_message = BotMessage(message, Sokuji(embed=embed))
-                if not subsokuji_message is None:
-                    subsokuji_message.data.locale = sokuji_message.data.locale
-                break
-            elif subsokuji_message is None and embed.title.split('  -', maxsplit=1)[0].isdecimal():
-                subsokuji_message = BotMessage(message, SubSokuji(embed=embed))
-            elif track is None:
-                track = Track.from_nick(embed.title.split(maxsplit=1)[0])
-    return sokuji_message, subsokuji_message, track
-
-
-class BotMessage:
-
-    __slots__ = (
-        'message',
-        'data'
-    )
-
-    def __init__(self, message: Message, data: Any) -> None:
-        self.message: Message = message
-        self.data = data
+from sokuji import result_image
+from sokuji.firebase import update
+from sokuji.sokuji_child import SokujiChild
+from sokuji.components import SokujiEmbed
 
 
 class Sokuji:
 
-    __slots__ = (
-        'embed'
-    )
+    def __init__(self, embed: Embed, child_embed: Optional[Embed] = None) -> None:
+        self._embed: Embed = embed
+        self._embed.remove_image()
+        self._flag_title: bool = False
+        self._flag_description: bool = False
+        self._flag_fields_name: bool = False
+        self._flag_footer: bool = False
+        self.child: Optional[SokujiChild] = None
+        if child_embed is not None:
+            self.child = SokujiChild(embed=child_embed, lang=self.lang)
 
-    def __init__(self, embed: Embed) -> None:
-        self.embed: Embed = embed
+    @property
+    def flag_title(self) -> bool:
+        if self._flag_title:
+            return True
+        return self.tags != self._old_tags
+
+    @flag_title.setter
+    def flag_title(self, flag: bool) -> None:
+        self._flag_title = flag
+        if not flag:
+            self._old_tags = self.tags
+
+    @property
+    def flag_description(self) -> bool:
+        if self._flag_description:
+            return True
+        return self.sum_scores != self._old_sum_scores
+
+    @flag_description.setter
+    def flag_description(self, flag: bool) -> None:
+        self._flag_description = flag
+        if not flag:
+            self._old_sum_scores = self.sum_scores
+
+    @property
+    def flag_fields_name(self) -> bool:
+        return self._flag_fields_name
+
+    @flag_fields_name.setter
+    def flag_fields_name(self, flag: bool) -> None:
+        self._flag_fields_name = flag
+
+    @property
+    def flag_footer(self) -> bool:
+        if self._flag_footer:
+            return True
+        return self.banner_users != self._old_banner_users
+
+    @flag_footer.setter
+    def flag_footer(self, flag: bool) -> None:
+        self._flag_footer = flag
+        if not flag:
+            self._old_banner_users = self.banner_users
+
+    @staticmethod
+    def start(
+        tags: list[str],
+        format: int,
+        lang: Lang,
+        total_race_num: Optional[int] = None,
+        banner_users: Sequence[str] = set()
+    ) -> Sokuji:
+        if total_race_num is None:
+            total_race_num = 12
+        title = '即時集計' if lang == Lang.JA else 'Sokuji'
+        title += f' {format}v{format}\n{" - ".join(tags)}'
+        embed = SokujiEmbed(
+            title=title,
+            description=f'`{Sokuji.scores_to_text(scores=[0]*(12//format), format=format)}`  `@{total_race_num}`'
+        )
+        sokuji = Sokuji(embed=embed)
+        sokuji.banner_users = set(banner_users)
+        return sokuji
+
+    @property
+    def embed(self) -> Embed:
+        if self.flag_title:
+            title = '即時集計' if self.lang == Lang.JA else 'Sokuji'
+            title += f' {self.format}v{self.format}\n{" - ".join(self.tags)}'
+            self._embed.title = title
+            self.flag_title = False
+        if self.flag_description:
+            self._embed.description = f'`{self.scores_to_text(scores=self.sum_scores, format=self.format)}`  `@{self.left_race_num}`'
+            self.flag_description = False
+        if self.flag_fields_name:
+            for i in range(len(self._embed.fields)):
+                name = self._embed.fields[i].name
+                if name in {'Repick', 'Penalty'} or '-' not in name:
+                    continue
+                track = Track.from_nick(name.rsplit(maxsplit=1)[-1])
+                if track is None:
+                    continue
+                abbr = track.abbr_ja if self.lang == Lang.JA else track.abbr
+                self._embed._fields[i].name = f'{name.rsplit(maxsplit=1)[0]} {abbr}'
+            self.flag_fields_name = False
+        if self.flag_footer:
+            if not self.banner_users:
+                self._embed.remove_footer()
+            else:
+                text = 'バナー更新' if self.lang == Lang.JA else 'Updating banner'
+                self._embed.set_footer(text=f'{text} for @' + ',@'.join(sorted(self.banner_users)))
+            self.flag_footer = False
+        return self._embed
+
+    @property
+    def message(self) -> BotMessage:
+        self.update_firebase()
+        message = BotMessage(embeds=[])
+        if self.child is not None:
+            message.embeds.append(self.child.embed)
+        if self.child is None or self.child_is_valid():
+            message.embeds.append(self.embed)
+        if self.left_race_num == 0 and self.format == 6:
+            message.embeds[-1].set_image(url='attachment://result.png')
+            message.file = result_image.make(tags=self.tags, scores=self.get_scores())
+        return message
 
     @property
     def format(self) -> int:
-        return int(self.embed.title.split('v', maxsplit=1)[0][-1])
+        if not hasattr(self, '_format'):
+            self._format: int = int(self._embed.title.split('v', maxsplit=1)[0][-1])
+        return self._format
 
     @property
     def tags(self) -> list[str]:
-        return list(self.embed.title.split('\n', maxsplit=1)[-1].split(' - '))
+        if not hasattr(self, '_tags'):
+            self._old_tags: list[str] = self._embed.title.split('\n', maxsplit=1)[-1].split(' - ')
+            self._tags: list[str] = self._old_tags.copy()
+        return self._tags
 
     @tags.setter
-    def tags(self, tags: list[str]):
-        title_text = self.embed.title.split('\n', maxsplit=1)[0]
-        self.embed.title = f'{title_text}\n{" - ".join(tags)}'
+    def tags(self, tags: list[str]) -> None:
+        self._tags = tags
+        self.flag_title = True
+        if self.child is not None:
+            self.child.tags = tags
 
     @property
     def sum_scores(self) -> list[int]:
-        sum_scores_text: str = self.embed.description.replace('`', '').split('  @', maxsplit=1)[0]
-        return Sokuji.text_to_scores(text=sum_scores_text)
+        if not hasattr(self, '_sum_scores'):
+            text = self._embed.description.replace('`', '').split('  @', maxsplit=1)[0]
+            self._old_sum_scores: list[int] = self.text_to_scores(text=text)
+            self._sum_scores: list[int] = self._old_sum_scores.copy()
+        return self._sum_scores
 
     @sum_scores.setter
     def sum_scores(self, sum_scores: list[int]) -> None:
-        self.embed.description = f'`{Sokuji.scores_to_text(scores=sum_scores)}`  `@{self.embed.description.split("`  `@", maxsplit=1)[-1]}'
+        self._sum_scores = sum_scores
+        self.flag_description = True
 
     @property
     def left_race_num(self) -> int:
-        left_race_num_text: str = self.embed.description.replace('`', '').split('  @', maxsplit=1)[-1]
-        return int(left_race_num_text)
+        if not hasattr(self, '_left_race_num'):
+            text = self._embed.description.replace('`', '').split('  @', maxsplit=1)[-1]
+            self._left_race_num: int = int(text)
+        return self._left_race_num
 
     @left_race_num.setter
     def left_race_num(self, left_race_num: int) -> None:
-        self.embed.description = f'{self.embed.description.split("`  `@", maxsplit=1)[0]}`  `@{left_race_num}`'
-
-    def dif_update(self, sum_scores_dif: list[int], left_race_num_dif: int) -> None:
-        sum_scores = self.sum_scores
-        for i in range(len(sum_scores)):
-            sum_scores[i] += sum_scores_dif[i]
-        left_race_num = self.left_race_num + left_race_num_dif
-        self.embed.description = f'`{Sokuji.scores_to_text(scores=sum_scores)}`  `@{left_race_num}`'
+        if left_race_num < 0:
+            raise LeftRaceNumMinusError(self.lang)
+        self._left_race_num = left_race_num
+        self.flag_description = True
 
     @property
     def race_num(self) -> int:
-        for field in reversed(self.embed.fields):
-            text = field.name.split(maxsplit=1)[0]
-            if text.isdecimal():
-                return int(text)
-        return 0
+        if not hasattr(self, '_race_num'):
+            self._race_num: int = 0
+            for field in reversed(self.embed.fields):
+                text = field.name.split(maxsplit=1)[0]
+                if text.isdecimal():
+                    self._race_num = int(text)
+                    break
+        return self._race_num
+
+    @race_num.setter
+    def race_num(self, race_num: int) -> None:
+        self._race_num = race_num
 
     @property
     def min_race_num(self) -> int:
-        for field in self.embed.fields:
-            text = field.name.split(maxsplit=1)[0]
-            if text.isdecimal():
-                return int(text)
-        return 0
+        if not hasattr(self, '_min_race_num'):
+            self._min_race_num: int = 0
+            for field in self.embed.fields:
+                text = field.name.split(maxsplit=1)[0]
+                if text.isdecimal():
+                    self._min_race_num = int(text)
+                    break
+        return self._min_race_num
+
+    @min_race_num.setter
+    def min_race_num(self, min_race_num: int) -> None:
+        self._min_race_num = min_race_num
 
     @property
     def total_race_num(self) -> int:
         return self.race_num + self.left_race_num
 
     @total_race_num.setter
-    def total_race_num(self, total_race_num) -> None:
+    def total_race_num(self, total_race_num: int) -> None:
         self.left_race_num = total_race_num - self.race_num
 
     @property
     def banner_users(self) -> set[str]:
-        if not self.embed.footer.text:
-            return set()
-        return set(self.embed.footer.text.split(' for @', maxsplit=1)[-1].split(',@'))
+        if not hasattr(self, '_banner_users'):
+            if not self._embed.footer.text:
+                self._old_banner_users: set[str] = set()
+            else:
+                self._old_banner_users: set[str] = set(self._embed.footer.text.split(' for @', maxsplit=1)[-1].split(',@'))
+            self._banner_users: set[str] = self._old_banner_users.copy()
+        return self._banner_users
 
     @banner_users.setter
     def banner_users(self, banner_users: set[str]) -> None:
-        if not banner_users:
-            self.embed.remove_footer()
-            return
-        if self.locale == Locale.JA:
-            self.embed.set_footer(text='バナー更新 for @' + ',@'.join(banner_users))
-            return
-        self.embed.set_footer(text='Updating banner for @' + ',@'.join(banner_users))
+        self._banner_users = banner_users
+        self.flag_footer = True
+
+    def get_old_lang(self) -> Lang:
+        if self._embed.title.startswith('即時'):
+            return Lang.JA
+        return Lang.EN
 
     @property
-    def locale(self) -> Locale:
-        title = self.embed.title
-        if title.startswith('即時'):
-            return Locale.JA
-        return Locale.EN
+    def lang(self) -> Lang:
+        if not hasattr(self, '_lang'):
+            if self._embed.title.startswith('即時'):
+                self._lang: Lang = Lang.JA
+            else:
+                self._lang: Lang = Lang.EN
+        return self._lang
 
-    @locale.setter
-    def locale(self, locale) -> None:
-        if locale == self.locale:
-            return
-        if locale == Locale.JA:
-            if self.embed.title.startswith('Sokuji'):
-                self.embed.title = self.embed.title.replace('Sokuji', '即時集計', 1)
-            elif self.embed.title.startswith('Archive'):
-                self.embed.title = self.embed.title.replace('Archive', '即時アーカイブ', 1)
-            for i in range(len(self.embed.fields)):
-                if self.embed._fields[i].name.split(maxsplit=1)[0].isdecimal() and '-' in self.embed._fields[i].name:
-                    track = Track.from_nick(self.embed._fields[i].name.split()[-1])
-                    if track is None:
-                        continue
-                    self.embed._fields[i].name = self.embed._fields[i].name.replace(f' {track.abbr}', f' {track.abbr_ja}')
-            if self.embed.footer:
-                self.embed._footer['text'] = self.embed._footer['text'].replace('Updating banner', 'バナー更新')
-            return
-        if self.embed.title.startswith('即時集計'):
-            self.embed.title = self.embed.title.replace('即時集計', 'Sokuji', 1)
-        elif self.embed.title.startswith('即時アーカイブ'):
-            self.embed.title = self.embed.title.replace('即時アーカイブ', 'Archive', 1)
-        for i in range(len(self.embed.fields)):
-            if self.embed._fields[i].name.split(maxsplit=1)[0].isdecimal() and '-' in self.embed._fields[i].name:
-                track = Track.from_nick(self.embed._fields[i].name.split()[-1])
-                if track is None:
-                    continue
-                self.embed._fields[i].name = self.embed._fields[i].name.replace(track.abbr_ja, track.abbr)
-        if self.embed.footer:
-            self.embed._footer['text'] = self.embed._footer['text'].replace('バナー更新', 'Updating banner')
+    @lang.setter
+    def lang(self, lang: Lang) -> None:
+        self._lang = lang
+        self.flag_title = True
+        self.flag_fields_name = True
+        self.flag_footer = True
+        if self.child is not None:
+            self.child.lang = lang
 
-    def toggle_locale(self) -> None:
-        if self.locale == Locale.JA:
-            self.locale = Locale.EN
-        else:
-            self.locale = Locale.JA
-
-    @property
-    def scores(self) -> list[list[int]]:
+    def get_scores(self) -> list[list[int]]:
         scores = [self.sum_scores]
         for field in reversed(self.embed.fields):
             text = field.value.split('`', maxsplit=3)[1]
-            scores.append([score-incleased_score for score, incleased_score in zip(scores[-1], Sokuji.text_to_scores(text))])
+            scores.append([score-incleased_score for score, incleased_score in zip(scores[-1], self.text_to_scores(text))])
         scores.reverse()
         return scores
 
-    def edit_track(self, race_num: Optional[int], track: Optional[Track]) -> bool:
-        if race_num is None:
-            race_num = self.race_num
+    def edit(self, race_num: Optional[int], track: Optional[Track], ranks_text: Optional[str]) -> None:
+        race_num = race_num or self.race_num
+        if race_num == 0 or race_num < self.min_race_num or race_num > self.race_num:
+            if race_num == self.race_num + 1 and self.child is not None and not ranks_text:
+                self.child.track = track
+                return
+            raise NotValidRaceNumError(self.lang)
+        if ranks_text is not None:
+            race = Race(format=self.format, ranks=[])
+            race.add_ranks_from_text(text=ranks_text)
+            if not race.is_valid():
+                raise NotValidRanksError(self.lang)
         race_num_text = str(race_num)
-        for i in range(len(self.embed.fields)):
-            if self.embed._fields[i].name.split(maxsplit=1)[0] == race_num_text:
-                if track is None:
+        for i in range(len(self.embed._fields)):
+            if self.embed.fields[i].name.split(maxsplit=1)[0] == race_num_text:
+                name = self.embed.fields[i].name
+                value = self.embed.fields[i].value
+                if ranks_text is not None:
+                    old_scores = self.text_to_scores(text=self.embed.fields[i].value.split('` | `', maxsplit=1)[0][1:])
+                    new_scores = race.scores
+                    for j in range(12 // self.format):
+                        self.sum_scores[j] += new_scores[i] - old_scores[i]
+                    value = f'`{self.scores_to_text(scores=new_scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`'
+                elif track is None:
                     name = race_num_text
-                elif self.locale == Locale.JA:
-                    name = f'{race_num_text}  - {TrackEmoji(track.id)} {track.abbr_ja}'
-                else:
-                    name = f'{race_num_text}  - {TrackEmoji(track.id)} {track.abbr}'
-                self.embed._fields[i].name = name
-                return True
-        return False
+                if track is not None:
+                    if self.lang == Lang.JA:
+                        name = f'{race_num_text}  - {TrackEmoji(track.id)} {track.abbr_ja}'
+                    else:
+                        name = f'{race_num_text}  - {TrackEmoji(track.id)} {track.abbr}'
+                self.embed._fields[i] = EmbedField(
+                    name=name,
+                    value=value,
+                    inline=False
+                )
+                return
 
-    def edit_race(self, race_num: int, text: str) -> bool:
-        race_num_text = str(race_num)
-        race = Race(format=self.format, ranks=[])
-        race.add_ranks_from_text(text=text)
-        if not race.is_valid():
-            return False
-        for i in range(len(self.embed.fields)):
-            if self.embed._fields[i].name.split(maxsplit=1)[0] == race_num_text:
-                scores_dif = []
-                for old, new in zip(
-                    Sokuji.text_to_scores(text=self.embed._fields[i].value.split('` | `', maxsplit=1)[0][1:]),
-                    race.scores
-                ):
-                    scores_dif.append(-old+new)
-                self.embed._fields[i].value = f'`{Sokuji.scores_to_text(scores=race.scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`'
-                self.dif_update(sum_scores_dif=scores_dif, left_race_num_dif=0)
-                return True
-        return False
+    def back(self) -> None:
+        if self.child is not None:
+            self.child.back()
+            if not self.child.ranks:
+                self.child = None
+            return
+        scores = None
+        for i in reversed(range(len(self._embed.fields))):
+            text = self._embed.fields[i].name.split(maxsplit=1)[0]
+            if text.isdecimal():
+                field = self._embed._fields.pop(i)
+                scores = self.text_to_scores(text=field.value.split('` | `', maxsplit=1)[0][1:])
+                self.left_race_num += 1
+            elif text in {'Repick', 'Penalty'}:
+                field = self._embed._fields.pop(i)
+                scores = self.text_to_scores(text=field.value[1:-1])
+            if scores is not None:
+                for i in range(12 // self.format):
+                    self.sum_scores[i] -= scores[i]
+                return
+        raise NoBackableContentError(self.lang)
 
     def add_field(self, name: str, value: str, inline: bool = False) -> None:
-        if len(self.embed.fields) >= 25:
-            self.embed._fields.pop(0)
-        self.embed.add_field(name=name, value=value, inline=inline)
+        if len(self._embed.fields) >= 25:
+            field: EmbedField = self._embed._fields.pop(0)
+            if field.name.split(maxsplit=1)[0].isdecimal():
+                self.min_race_num += 1
+        self._embed.add_field(name=name, value=value, inline=inline)
 
-    def back(self) -> bool:
-        for i in range(-1, -len(self.embed.fields)-1, -1):
-            text = self.embed.fields[i].name.split(maxsplit=1)[0]
-            if text.isdecimal():
-                _field = self.embed._fields.pop(i)
-                scores = Sokuji.text_to_scores(text=_field.value.split('` | `', maxsplit=1)[0][1:])
-                self.dif_update(sum_scores_dif=list(map(lambda s: -s, scores)), left_race_num_dif=1)
-                return True
-            if text in {'Repick', 'Penalty'}:
-                _field = self.embed._fields.pop(i)
-                scores = Sokuji.text_to_scores(text=_field.value[1:-1])
-                self.dif_update(sum_scores_dif=list(map(lambda s: -s, scores)), left_race_num_dif=0)
-                return True
-        return False
+    def get_tag_index(self, tag: Optional[str]) -> int:
+        if not tag:
+            return 0
+        if tag not in self.tags:
+            raise TagNotFoundError(self.lang)
+        return self.tags.index(tag)
 
-    def add_repick(self, tag: Optional[str]) -> bool:
-        if tag is None:
-            tag_index = 0
-        else:
-            if not tag in self.tags:
-                return False
-            tag_index = self.tags.index(tag)
-        scores = [0]*(12//self.format)
+    def add_repick(self, tag: Optional[str]) -> Optional[BotMessage]:
+        tag_index = self.get_tag_index(tag=tag)
+        scores = [0] * (12 // self.format)
         scores[tag_index] = -15
-        self.dif_update(sum_scores_dif=scores, left_race_num_dif=0)
-        self.add_field(name=f'Repick', value=f'`{Sokuji.scores_to_text(scores=scores, simple=True)}`')
-        return True
-    
-    def add_penalty(self, penalty: int, tag: Optional[str]) -> bool:
-        if tag is None:
-            tag_index = 0
-        else:
-            if not tag in self.tags:
-                return False
-            tag_index = self.tags.index(tag)
-        scores = [0]*(12//self.format)
-        scores[tag_index] = penalty
-        self.dif_update(sum_scores_dif=scores, left_race_num_dif=0)
-        self.add_field(name=f'Penalty', value=f'`{Sokuji.scores_to_text(scores=scores, simple=True)}`')
-        return True
+        self.add_field(name='Repick', value=f'`{self.scores_to_text(scores=scores, simple=True)}`')
+        self.sum_scores[tag_index] -= 15
+
+    def add_penalty(self, score: int, tag: Optional[str]) -> bool:
+        tag_index = self.get_tag_index(tag=tag)
+        scores = [0] * (12 // self.format)
+        scores[tag_index] = score
+        self.add_field(name='Penalty', value=f'`{self.scores_to_text(scores=scores, simple=True)}`')
+        self.sum_scores[tag_index] += score
 
     def add_race(self, race: Race) -> None:
-        race_num = self.race_num + 1
+        self.race_num += 1
+        self.left_race_num -= 1
         if race.track is None:
-            name = str(race_num)
+            name = str(self.race_num)
         else:
-            if self.locale == Locale.JA:
-                name = f'{race_num}  - {TrackEmoji(race.track.id)} {race.track.abbr_ja}'
+            if self.lang == Lang.JA:
+                name = f'{self.race_num}  - {TrackEmoji(race.track.id)} {race.track.abbr_ja}'
             else:
-                name = f'{race_num}  - {TrackEmoji(race.track.id)} {race.track.abbr}'
-        self.add_field(name=name, value=f'`{Sokuji.scores_to_text(scores=race.scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`')
-        self.dif_update(sum_scores_dif=race.scores, left_race_num_dif=-1)
+                name = f'{self.race_num}  - {TrackEmoji(race.track.id)} {race.track.abbr}'
+        scores = race.scores
+        self.add_field(name=name, value=f'`{self.scores_to_text(scores=scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`')
+        for i in range(12 // self.format):
+            self.sum_scores[i] += scores[i]
 
-    def add_text(self, text: str, track: Optional[Track] = None) -> Optional[SubSokuji]:
-        format = self.format
-        if format == 6:
-            race = Race(format=format, ranks=[], track=track)
+    def add_text(self, text: str, track: Optional[Track] = None) -> None:
+        if self.format == 6:
+            race = Race(format=self.format, ranks=[], track=track)
             race.add_ranks_from_text(text=text)
-            if race.is_valid():
-                self.add_race(race=race)
+            if not race.is_valid():
+                raise NotValidRanksError(self.lang)
+            self.add_race(race=race)
             return
-        sub = SubSokuji.from_sokuji(sokuji=self, track=track)
-        sub.add_text(text=text)
-        return sub
+        if self.child is None:
+            self.child = SokujiChild.start(
+                race_num = self.race_num+1,
+                tags = self.tags,
+                lang = self.lang,
+                track = track
+            )
+        self.child.add_text(text=text, format=self.format)
+        if self.child_is_valid():
+            self.add_child()
 
-    def add_subsokuji(self, subsokuji: SubSokuji):
-        self.add_race(race=subsokuji.to_race())
+    def add_child(self) -> None:
+        self.race_num += 1
+        self.left_race_num -= 1
+        name = self.child.embed.title
+        scores = list(map(lambda r: r.score, self.child.ranks))
+        self.add_field(name=name, value=f'`{self.scores_to_text(scores=scores, format=self.format)}` | `{",".join(map(str, self.child.ranks[0].data))}`')
+        for i in range(12 // self.format):
+            self.sum_scores[i] += scores[i]
 
-    @staticmethod
-    def from_mogi(mogi: Mogi, locale: Locale = Locale.JA, banner_users: list[str] = [], total_race_num: int = 12) -> Sokuji:
-        if locale == Locale.JA:
-            title = f'即時集計 {mogi.format}v{mogi.format}\n{" - ".join(mogi.tags)}'
-        else:
-            title = f'Sokuji {mogi.format}v{mogi.format}\n{" - ".join(mogi.tags)}'
-        description = f'`{Sokuji.scores_to_text(scores=mogi.sum_scores, format=mogi.format)}`  `@{total_race_num - len(mogi.races)}`'
-        sokuji = Sokuji(embed=Embed(title=title, description=description))
-        sokuji.banner_users = banner_users
-        for race in mogi.races:
-            sokuji.add_race(race=race)
-        return sokuji
+    def child_is_valid(self) -> bool:
+        if self.child is None:
+            return False
+        return len(self.child.ranks) == 12 // self.format
+
+    def end(self) -> None:
+        self._embed.set_author(name='Archive')
+
+    def resume(self) -> None:
+        self._embed.remove_author()
+
+    def update_firebase(self) -> None:
+        if not self.banner_users:
+            return
+        data = {}
+        if self.format == 6:
+            dif = self.sum_scores[0] - self.sum_scores[1]
+            win = int(dif > self.left_race_num*40)
+            d = {'teams': self.tags, 'scores': self.sum_scores, 'left': self.left_race_num, 'dif': '{:+}'.format(dif), 'win': win}
+            for user in self.banner_users:
+                data[user] = d
+            update(data)
+            return
+        teamscores = sorted(dict(zip(self.tags, self.sum_scores)), key=lambda x:x[1], reverse=True)
+        d = {'teams': list(map(lambda i: i[0], teamscores)), 'scores': list(map(lambda i: i[1], teamscores)), 'left': self.left_race_num}
+        for user in self.banner_users:
+            data[user] = d
+        update(data)
 
     @staticmethod
     def scores_to_text(scores: list[int], format: Optional[int] = None, simple: bool = False) -> str:
@@ -322,203 +440,4 @@ class Sokuji:
 
     @staticmethod
     def text_to_scores(text: str) -> list[int]:
-        return list(map(lambda x: int(x.split('(')[0]), text.split(' : ')))
-
-    @staticmethod
-    def start(tags: list[str] = [], format: Optional[int] = None, locale: Locale = Locale.JA) -> Sokuji:
-        mogi = Mogi(tags=tags, format=format)
-        sokuji = Sokuji.from_mogi(mogi=mogi, locale=locale)
-        return sokuji
-
-    def end(self):
-        if self.locale == Locale.JA:
-            self.embed.title = self.embed.title.replace('即時集計', '即時アーカイブ', 1)
-        else:
-            self.embed.title = self.embed.title.replace('Sokuji', 'Archive', 1)
-
-    def resume(self):
-        if self.locale == Locale.JA:
-            self.embed.title = self.embed.title.replace('即時アーカイブ', '即時集計', 1)
-        else:
-            self.embed.title = self.embed.title.replace('Archive', 'Sokuji', 1)
-
-    async def send(self, messageable: Messageable) -> None:
-        if self.race_num == 0:
-            await messageable.send(embed=self.embed, view=SokujiView(sokuji=self))
-        else:
-            await messageable.send(embed=self.embed)
-        self.update_firebase()
-
-    async def edit(self, message: Message) -> None:
-        if self.race_num == 0:
-            await message.edit(embed=self.embed, view=SokujiView(sokuji=self))
-        else:
-            await message.edit(embed=self.embed)
-        self.update_firebase()
-    
-    def update_firebase(self):
-        banner_users = self.banner_users
-        if not banner_users:
-            return
-        sum_scores = self.sum_scores
-        data = {}
-        if self.format == 6:
-            dif = sum_scores[0] - sum_scores[1]
-            left = self.left_race_num
-            win = int(dif > left*40)
-            d = {'teams': self.tags, 'scores': sum_scores, 'left': left, 'dif': '{:+}'.format(dif), 'win': win}
-            for user in banner_users:
-                data[user] = d
-            update(data)
-            return
-        teamscores = dict(zip(self.tags, sum_scores))
-        teamscores: dict = sorted(teamscores.items(), key=lambda x:x[1], reverse=True)
-        d = {'teams': list(map(lambda i: i[0], teamscores)), 'scores': list(map(lambda i: i[1], teamscores)), 'left': self.left_race_num}
-        for user in banner_users:
-            data[user] = d
-        update(data)
-
-    @staticmethod
-    def embed_is_valid(embed: Embed) -> bool:
-        title = embed.title
-        return title.startswith('即時集計') or title.startswith('Sokuji')
-
-    @staticmethod
-    def embed_is_ended(embed: Embed) -> bool:
-        title = embed.title
-        return title.startswith('即時アーカイブ') or title.startswith('Archive')
-
-
-class SokujiView(View):
-
-    def __init__(self, sokuji: Sokuji) -> None:
-        super().__init__()
-        self.add_item(SokujiView.LoccalizeButton(sokuji.locale))
-
-    class LoccalizeButton(Button):
-
-        def __init__(self, locale: Locale):
-            if locale == Locale.JA:
-                super().__init__(label='English')
-            else:
-                super().__init__(label='日本語')
-        
-        async def callback(self, interaction: Interaction):
-            message = interaction.message
-            if message is None or not message.embeds:
-                await interaction.response.send_message('This sokuji does not include data.')
-                return
-            sokuji = Sokuji(embed=message.embeds[0])
-            sokuji.toggle_locale()
-            await interaction.response.edit_message(embed=sokuji.embed, view=SokujiView(sokuji))
-
-
-class SubSokuji:
-
-    __slots__ = (
-        'embed',
-        'locale'
-    )
-
-    def __init__(self, embed: Embed, locale: Locale = Locale.JA) -> None:
-        self.embed: Embed = embed
-        self.locale: Locale = locale
-
-    @property
-    def format(self) -> int:
-        return 12 // len(self.embed._fields)
-
-    @property
-    def race_num(self) -> int:
-        return int(self.embed.title.split(maxsplit=1)[0])
-
-    @property
-    def track(self) -> Optional[Track]:
-        if '-' in self.embed.title:
-            return Track.from_nick(self.embed.title.split('- ', maxsplit=1)[-1])
-
-    @track.setter
-    def track(self, track: Optional[Track]) -> None:
-        race_num_text = self.embed.title.split('  -', maxsplit=1)[0]
-        if track is None:
-            self.embed.title = race_num_text
-        elif self.locale == Locale.JA:
-            self.embed.title = f'{race_num_text}  - {track.abbr_ja}'
-        else:
-            self.embed.title = f'{race_num_text}  - {track.abbr}'
-
-    @property
-    def tags(self) -> list[str]:
-        return list(map(lambda f: f.name, self.embed.fields))
-
-    @tags.setter
-    def tags(self, tags: list[str]):
-        for i in range(min(len(tags), len(self.embed._fields))):
-            self.embed._fields[i].name = tags[i]
-
-    @property
-    def ranks(self) -> list[Rank]:
-        ranks = []
-        for field in self.embed.fields:
-            if not 'rank' in field.value:
-                break
-            ranks.append(SubSokuji.text_to_rank(field.value))
-        return ranks
-
-    def __len__(self) -> int:
-        i = 0
-        for field in self.embed.fields:
-            if not 'rank' in field.value:
-                return i
-            i += 1
-        return i
-
-    def to_race(self) -> Race:
-        return Race(format=self.format, ranks=self.ranks, track=self.track)
-
-    def is_valid(self) -> bool:
-        for field in self.embed.fields:
-            if not 'rank' in field.value:
-                return False
-        return True
-
-    def add_text(self, text: str) -> None:
-        ranks = Rank.get_ranks_from_text(text=text, format=self.format, ranks=self.ranks)
-        for i in range(len(ranks)):
-            if not 'rank' in self.embed._fields[i].value:
-                self.embed._fields[i].value = SubSokuji.rank_to_text(rank=ranks[i])
-
-    def back(self) -> bool:
-        for i in range(-1, -len(self.embed.fields)-1, -1):
-            if 'rank' in self.embed._fields[i].value:
-                self.embed._fields[i].value = 'score : `0`'
-                return True
-        return False
-
-    async def send(self, messageable: Messageable) -> Message:
-        return await messageable.send(embed=self.embed)
-
-    async def edit(self, message: Message) -> Message:
-        return await message.edit(embed=self.embed)
-
-    @staticmethod
-    def rank_to_text(rank: Rank) -> str:
-        return f'score : `{rank.score}` | rank : `{",".join(map(str, rank.data))}`'
-
-    @staticmethod
-    def text_to_rank(text: str) -> Rank:
-        return Rank(data=list(map(int, text.split('rank : `', maxsplit=1)[-1][:-1].split(','))))
-
-    @staticmethod
-    def from_sokuji(sokuji: Sokuji, track: Optional[Track] = None) -> SubSokuji:
-        locale = sokuji.locale
-        if track is None:
-            title = f'{sokuji.race_num+1}'
-        elif locale == Locale.JA:
-            title = f'{sokuji.race_num+1}  - {track.abbr_ja}'
-        else:
-            title = f'{sokuji.race_num+1}  - {track.abbr}'
-        embed = Embed(title=title)
-        for tag in sokuji.tags:
-            embed.add_field(name=tag, value='score : `0`', inline=False)
-        return SubSokuji(embed=embed, locale=locale)
+        return list(map(lambda x: int(x.split('(', maxsplit=1)[0]), text.split(' : ')))
