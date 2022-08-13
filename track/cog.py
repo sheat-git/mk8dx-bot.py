@@ -20,16 +20,16 @@ class TrackCog(commands.Cog, name='Track'):
         TrackEmoji.setup(self.bot)
         # my old team BP's joke
         if self.bot.user.id == SNEET_BOT_ID:
-            Track.RMP.nicks.add('seimei')
-            Track.TH.nicks.add('ｾｲﾒｲ')
-            Track.RMMM.nicks.add('ﾜﾀｶﾞｼ')
-            Track.SA.nicks.update({'dra', 'ﾄﾞﾗ'})
-            Track.DEA.nicks.update({'kichi', 'ｷﾁ'})
-            Track.DBP.nicks.update({'kami', 'kami track', 'ｵﾐｸｼﾞｺｰｽ'})
-            Track.DWGM.nicks.update({'gomi', 'gomi track'})
-            Track.DBB.nicks.add('ﾓｻﾞﾋﾞｰ')
-            Track.RDKJ.nicks.add('jk')
-            Track.CC.nicks.update({'新潟県', 'ﾆｲｶﾞﾀｹﾝ'})
+            Track.RMP.nicks |= {'seimei'}
+            Track.TH.nicks |= {'ｾｲﾒｲ'}
+            Track.RMMM.nicks |= {'ﾜﾀｶﾞｼ'}
+            Track.SA.nicks |= {'dra', 'ﾄﾞﾗ'}
+            Track.DEA.nicks |= {'kichi', 'ｷﾁ'}
+            Track.DBP.nicks |= {'kami', 'kami track', 'ｵﾐｸｼﾞｺｰｽ'}
+            Track.DWGM.nicks |= {'gomi', 'gomi track'}
+            Track.DBB.nicks |= {'ﾓｻﾞﾋﾞｰ'}
+            Track.RDKJ.nicks |= {'jk'}
+            Track.CC.nicks |= {'新潟県', 'ﾆｲｶﾞﾀｹﾝ'}
 
     def track_info(self, nick: str, include_joke: bool = False) -> Optional[BotMessage]:
         track = Track.from_nick(nick)
