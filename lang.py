@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class Locale(Enum):
+class Lang(Enum):
     JA = 'japanese'
     EN = 'english'
