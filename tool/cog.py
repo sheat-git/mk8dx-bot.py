@@ -35,7 +35,7 @@ class ToolCog(commands.Cog, name='Tool'):
 
     @commands.slash_command(
         name='sheat',
-        description='Shows introduction of sheat bot.',
+        description='Shows introduction of sheat bot',
         description_localizations={'ja': '使用方法'},
     )
     async def slash_instruction(
