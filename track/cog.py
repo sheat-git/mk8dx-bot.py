@@ -1,5 +1,6 @@
 from typing import Optional
-from components import BotMessage, ColoredEmbed as Embed
+from components import BotMessage, ColoredEmbed
+from track.components import TrackEmbed
 from discord import Message
 from discord.ext import commands
 from mk8dx import Track
@@ -29,7 +30,7 @@ class TrackCog(commands.Cog, name='Track'):
             Track.DBB.nicks.add('ﾓｻﾞﾋﾞｰ')
             Track.RDKJ.nicks.add('jk')
             Track.CC.nicks.update({'新潟県', 'ﾆｲｶﾞﾀｹﾝ'})
-    
+
     def track_info(self, nick: str, include_joke: bool = False) -> Optional[BotMessage]:
         track = Track.from_nick(nick)
         if track is None:
@@ -46,12 +47,12 @@ class TrackCog(commands.Cog, name='Track'):
                 track = Track.RMP
             else:
                 return
-        embed = Embed(
+        embed = TrackEmbed(
             title=f'{track.abbr} {track.abbr_ja}',
             description=f'{track.full_name}\n{track.full_name_ja}'
         )
-        if track.id < 56:
-            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/1.2/{track.id}.jpg')
+        if track.id < 64:
+            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/20220813/{track.id}.jpg')
         else:
             embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/cups/{track.cup.id}.jpg')
         embed.set_footer(text='Map: © Mario Kart Blog')
@@ -61,7 +62,7 @@ class TrackCog(commands.Cog, name='Track'):
         track = Track.from_nick(nick)
         if track is None:
             return BotMessage(f'Track Not Found: {nick}')
-        return BotMessage(embed=Embed(
+        return BotMessage(embed=ColoredEmbed(
             title=f'{track.abbr} {track.abbr_ja}',
             description='\n'.join(sorted(track.nicks))
         ))
