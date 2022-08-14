@@ -888,12 +888,12 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @commands.Cog.listener(name='on_command_error')
     async def command_error(self, ctx: commands.Context, error: commands.CommandInvokeError) -> None:
-        if not isinstance(error.original, SokujiError):
+        if not hasattr(error, 'original') or not isinstance(error.original, SokujiError):
             return
         await error.original.message.send(ctx)
 
     @commands.Cog.listener(name='on_application_command_error')
     async def slash_error(self, ctx: ApplicationContext, error: ApplicationCommandInvokeError) -> None:
-        if not isinstance(error.original, SokujiError):
+        if not hasattr(error, 'original') or not isinstance(error.original, SokujiError):
             return
         await error.original.message.respond(ctx, ephemeral=True)
