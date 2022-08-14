@@ -287,7 +287,7 @@ class Sokuji:
                     old_scores = self.text_to_scores(text=self.embed.fields[i].value.split('` | `', maxsplit=1)[0][1:])
                     new_scores = race.scores
                     for j in range(12 // self.format):
-                        self.sum_scores[j] += new_scores[i] - old_scores[i]
+                        self.sum_scores[j] += new_scores[j] - old_scores[j]
                     value = f'`{self.scores_to_text(scores=new_scores, format=self.format)}` | `{",".join(map(str, race.ranks[0].data))}`'
                 elif track is None:
                     name = race_num_text
