@@ -1,7 +1,6 @@
 from typing import Union, Optional
 from discord.abc import Messageable
 from discord import (
-    ApplicationCommandError,
     Member,
     Message,
     ApplicationContext,

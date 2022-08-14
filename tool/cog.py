@@ -1,11 +1,14 @@
-from __future__ import annotations
-
 from typing import Optional
 import random
-
-from discord import ApplicationContext, DMChannel, EmbedField, Option
-from components import ColoredEmbed as Embed
+from discord import (
+    ApplicationContext,
+    DMChannel,
+    EmbedField,
+    Option
+)
 from discord.ext import commands, pages
+
+from components import ColoredEmbed
 
 
 class ToolCog(commands.Cog, name='Tool'):
@@ -36,21 +39,20 @@ class ToolCog(commands.Cog, name='Tool'):
     @commands.slash_command(
         name='sheat',
         description='Shows introduction of sheat bot',
-        description_localizations={'ja': '使用方法'},
+        description_localizations={'ja': '使用方法'}
     )
     async def slash_instruction(
         self,
         ctx: ApplicationContext,
-        # lang: Option(
-        #     str,
-        #     choices=['日本語', 'English'],
-        #     required=False,
-        #     name='lang',
-        #     name_localizations={'ja': '言語'},
-        # )
-    ):
-        lang = None
-        if lang is None and (ctx.locale or 'ja') == 'ja' or lang == '日本語':
+        locale: Option(
+            str,
+            name='locale',
+            name_localizations={'ja': '言語'},
+            choices=['English', '日本語'],
+            required=False
+        )
+    ) -> None:
+        if locale is None and (ctx.locale or 'ja') == 'ja' or locale == '日本語':
             e = self.INSTRUCTION_EMBEDS_JA
         else:
             e = self.INSTRUCTION_EMBEDS_EN
@@ -70,7 +72,7 @@ class ToolCog(commands.Cog, name='Tool'):
 
     # setup pages
     INSTRUCTION_EMBEDS_JA = [
-        Embed(
+        ColoredEmbed(
             title='基本操作',
             fields=[
                 EmbedField(
@@ -117,7 +119,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='即時編集コマンド',
             fields=[
                 EmbedField(
@@ -178,7 +180,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='ラウンジコマンド',
             fields=[
                 EmbedField(
@@ -244,7 +246,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='その他のコマンド',
             fields=[
                 EmbedField(
@@ -275,7 +277,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='Tips（即時順位入力）',
             description='こんな入力もできるよ〜ってものです！もちろんTipsを使わない普通の入力もできるよ！',
             fields=[
@@ -303,7 +305,7 @@ class ToolCog(commands.Cog, name='Tool'):
         )
     ]
     INSTRUCTION_EMBEDS_EN = [
-        Embed(
+        ColoredEmbed(
             title='Basics',
             fields=[
                 EmbedField(
@@ -356,7 +358,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='Edit Sokuji Commands',
             fields=[
                 EmbedField(
@@ -417,7 +419,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='Lounge Commands',
             fields=[
                 EmbedField(
@@ -483,7 +485,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='Other Commands',
             fields=[
                 EmbedField(
@@ -514,7 +516,7 @@ class ToolCog(commands.Cog, name='Tool'):
                 )
             ]
         ),
-        Embed(
+        ColoredEmbed(
             title='Tips (Sokuji Ranks)',
             description='You can use the following abbreviated input!',
             fields=[
