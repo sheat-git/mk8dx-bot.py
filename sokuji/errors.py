@@ -1,12 +1,10 @@
 from components import BotMessage
 from lang import Lang
+from errors import BotError
 
-class SokujiError(Exception):
-    __slots__ = (
-        'message'
-    )
-    def __init__(self, message: BotMessage, *args: object) -> None:
-        self.message: BotMessage = message
+
+class SokujiError(BotError):
+    def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
 class SokujiNotFoundError(SokujiError):
