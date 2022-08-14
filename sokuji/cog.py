@@ -1,7 +1,7 @@
 from typing import Union, Optional
 from discord.abc import Messageable
 from discord import (
-    ApplicationCommandInvokeError,
+    ApplicationCommandError,
     Member,
     Message,
     ApplicationContext,
@@ -885,15 +885,3 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         sm = await SokujiMessage.fetched(message.channel)
         await self.race_add(sm, ranks).send(message.channel)
         await sm.delete()
-
-    @commands.Cog.listener(name='on_command_error')
-    async def command_error(self, ctx: commands.Context, error: commands.CommandInvokeError) -> None:
-        if not hasattr(error, 'original') or not isinstance(error.original, SokujiError):
-            return
-        await error.original.message.send(ctx)
-
-    @commands.Cog.listener(name='on_application_command_error')
-    async def slash_error(self, ctx: ApplicationContext, error: ApplicationCommandInvokeError) -> None:
-        if not hasattr(error, 'original') or not isinstance(error.original, SokujiError):
-            return
-        await error.original.message.respond(ctx, ephemeral=True)

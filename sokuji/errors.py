@@ -4,8 +4,8 @@ from errors import BotError
 
 
 class SokujiError(BotError):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
+    def __init__(self, message: BotMessage, *args: object) -> None:
+        super().__init__(message=message, *args)
 
 class SokujiNotFoundError(SokujiError):
     def __init__(self, *args: object) -> None:

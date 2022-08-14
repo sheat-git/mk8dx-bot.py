@@ -4,11 +4,19 @@ from io import BytesIO, StringIO
 from typing import Optional
 import json
 import discord
-from discord import EmbedField, TextChannel
+from discord import (
+    Embed,
+    EmbedField,
+    TextChannel,
+    ApplicationContext,
+    ApplicationCommandError,
+    ApplicationCommandInvokeError
+)
 from discord.ext import commands
 from discord.utils import format_dt
 
-from components import ColoredEmbed as Embed
+from components import ColoredEmbed
+from errors import BotError
 
 
 LOG_CHANNEL_ID = 1003228025774682122
@@ -22,22 +30,21 @@ class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
     async def setup(self):
         self.LOG_CHANNEL = self.bot.get_channel(LOG_CHANNEL_ID)
     
-    async def log_error(self, command: str, error: Exception):
-        if isinstance(error, commands.CommandNotFound):
-            return
-        dt = datetime.datetime.utcnow()
-        embed = Embed(
+    async def command_log_error(self, ctx: commands.Context, error: Exception) -> None:
+        now = datetime.datetime.utcnow()
+        embed = ColoredEmbed(
             title=str(type(error)),
             description=f'```{error}```',
             fields=[
                 EmbedField(
                     name='Command',
-                    value=f'```{command}```',
+                    value=f'```{ctx.message.content}```',
                     inline=False
                 ),
                 EmbedField(
                     name='Errored on',
-                    value=format_dt(dt, 'd') + format_dt(dt, 'T')
+                    value=format_dt(now, 'd')+format_dt(now, 'T'),
+                    inline=False
                 )
             ]
         )
@@ -47,8 +54,44 @@ class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
         file = discord.File(fp=binary, filename='traceback.txt')
         binary.close()
         await self.LOG_CHANNEL.send(embed=embed, file=file)
-    
-    async def embed_to_json(self, sender: discord.abc.Messageable, fetcher: discord.abc.Messageable, message_id: int, embed_index: int):
+
+    async def slash_log_error(self, ctx: ApplicationContext, error: Exception) -> None:
+        now = datetime.datetime.utcnow()
+        embed = ColoredEmbed(
+            title=str(type(error)),
+            description=f'```{error}```',
+            fields=[
+                EmbedField(
+                    name='Command',
+                    value=f'```{ctx.command.qualified_name}```',
+                    inline=False
+                ),
+                EmbedField(
+                    name='Options',
+                    value=f'```{ctx.selected_options}```',
+                    inline=False
+                ),
+                EmbedField(
+                    name='Errored on',
+                    value=format_dt(now, 'd')+format_dt(now, 'T'),
+                    inline=False
+                )
+            ]
+        )
+        binary = StringIO()
+        traceback.print_exception(error, file=binary)
+        binary.seek(0)
+        file = discord.File(fp=binary, filename='traceback.txt')
+        binary.close()
+        await self.LOG_CHANNEL.send(embed=embed, file=file)
+
+    async def embed_to_json(
+        self,
+        sender: discord.abc.Messageable,
+        fetcher: discord.abc.Messageable,
+        message_id: int,
+        embed_index: int
+    ) -> None:
         message = self.bot.get_message(message_id)
         if message is None:
             message = await fetcher.fetch_message(message_id)
@@ -59,10 +102,22 @@ class DevCog(commands.Cog, name='Dev', command_attrs=dict(hidden=True)):
         file = discord.File(fp=binary, filename='embed.json')
         binary.close()
         await sender.send(file=file)
-    
+
     @commands.Cog.listener(name='on_command_error')
-    async def catch_error(self, ctx: commands.Context, error: Exception):
-        await self.log_error(ctx.message.content, error)
+    async def command_catch_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, BotError):
+            await error.original.message.send(ctx)
+            return
+        if isinstance(error, commands.CommandNotFound):
+            return
+        await self.command_log_error(ctx, error)
+
+    @commands.Cog.listener(name='on_application_command_error')
+    async def slash_catch_error(self, ctx: ApplicationContext, error: ApplicationCommandError) -> None:
+        if isinstance(error, ApplicationCommandInvokeError) and isinstance(error.original, BotError):
+            await error.original.message.respond(ctx, ephemeral=True)
+            return
+        await self.slash_log_error(ctx, error)
 
     @commands.command(
         name='jsonM',
