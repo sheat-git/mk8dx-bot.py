@@ -623,7 +623,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         if channel is None:
             await ctx.send('Channel Not Found')
             return
-        await (await self.result(ctx, channel))
+        await (await self.result(ctx, channel)).send(ctx)
 
     @sokuji.command(
         name='result',
