@@ -734,7 +734,8 @@ class SokujiCog(commands.Cog, name='Sokuji'):
 
     @banner.command(
         name='remove',
-        description='Removes banner user'
+        description='Removes banner user',
+        description_localizations={'ja': 'バナーの更新を停止'}
     )
     async def slash_banner_remove(
         self,
