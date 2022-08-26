@@ -419,7 +419,7 @@ class Sokuji:
                 data[user] = d
             update(data)
             return
-        teamscores = sorted(dict(zip(self.tags, self.sum_scores)), key=lambda x:x[1], reverse=True)
+        teamscores = sorted(zip(self.tags, self.sum_scores), key=lambda x:x[1], reverse=True)
         d = {'teams': list(map(lambda i: i[0], teamscores)), 'scores': list(map(lambda i: i[1], teamscores)), 'left': self.left_race_num}
         for user in self.banner_users:
             data[user] = d
