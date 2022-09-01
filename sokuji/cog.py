@@ -284,7 +284,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     @sokuji.command(
         name='resume',
         description='Resumes ended sokuji',
-        description_localization={'ja': '終了した即時を再開'}
+        description_localizations={'ja': '終了した即時を再開'}
     )
     async def slash_resume(self, ctx: ApplicationContext) -> None:
         await (await self.resume(ctx)).respond(ctx)
@@ -322,7 +322,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
     @sokuji.command(
         name='localize',
         description='Localizes sokuji',
-        description_localizetions={'ja': '即時の言語変更'}
+        description_localizations={'ja': '即時の言語変更'}
     )
     async def slash_localize(
         self,
@@ -429,7 +429,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             name='tag',
             name_localizations={'ja': 'タグ'},
             description='Enter tag number and new tag with separated by space. Not given tag number, edit the last tag.',
-            description_localizetions={'ja': '何番目かと新しいタグを空白区切りで入力（何番目かを省略すると最後のタグを編集）'},
+            description_localizations={'ja': '何番目かと新しいタグを空白区切りで入力（何番目かを省略すると最後のタグを編集）'},
             required=False
         ),
         tags: Option(
@@ -852,7 +852,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             name='ranks',
             name_localizations={'ja': '順位'},
             description='Enter the rankings for each team, separated by spaces. No spaces needed for the rankings of one.',
-            description_localization={'ja': 'チームごとに順位を空白区切りで入力（同チームの順位は空白なし）'}
+            description_localizations={'ja': 'チームごとに順位を空白区切りで入力（同チームの順位は空白なし）'}
         ),
         track: Option(
             str,
