@@ -20,7 +20,8 @@ def make_pltimg6(scores: list[list[int]]) -> Image:
     else:
         y = [min_dif, (min_dif+max_dif)//2, max_dif]
 
-    fig = plt.figure(figsize=(12.8, 3), facecolor='#2c3e50', tight_layout=False)
+    fig = plt.figure(figsize=(12.8, 3), facecolor='#2c3e50')
+    fig.subplots_adjust(0.125, 0.1, 0.9, 0.85)
     ax = fig.add_subplot(111, xmargin=0, facecolor='#2c3e50', xticks=[], yticks=y)
     ax.tick_params(labelsize = 20)
     ax.grid(axis='y', color='#95a5a6')
