@@ -52,7 +52,7 @@ class TrackCog(commands.Cog, name='Track'):
             description=f'{track.full_name}\n{track.full_name_ja}'
         )
         if track.id < 64:
-            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/20220813/{track.id}.jpg')
+            embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/tracks/20230205/{track.id}.jpg')
         else:
             embed.set_image(url=f'https://raw.githubusercontent.com/sheat-git/mk8dx/main/cups/{track.cup.id}.jpg')
         embed.set_footer(text='Map: © Mario Kart Blog')
