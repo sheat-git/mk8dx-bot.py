@@ -28,7 +28,7 @@ idna==3.3
 jaconv==0.3
 kiwisolver==1.4.4
 matplotlib==3.6.0rc2
-mk8dx==1.0.12
+mk8dx
 msgpack==1.0.4
 multidict==6.0.2
 numpy==1.23.2
