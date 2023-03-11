@@ -8,7 +8,7 @@ py-cord = "*"
 firebase-admin = "*"
 pillow = "*"
 matplotlib = "*"
-mk8dx = "*"
+mk8dx = ">=1.0.16"
 
 [dev-packages]
 black = "*"
