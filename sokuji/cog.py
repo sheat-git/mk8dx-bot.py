@@ -63,7 +63,7 @@ class SokujiMessage():
             elif embed.author.name == 'Sokuji Child':
                 self.child_message = message
                 child_embed = embed
-            elif embed.author.name == 'Track':
+            elif embed.author.name == 'Track' and self.track is None:
                 self.track = Track.from_nick(embed.title.split(maxsplit=1)[0])
         raise SokujiNotFoundError()
 
