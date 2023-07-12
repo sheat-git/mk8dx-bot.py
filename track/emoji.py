@@ -30,7 +30,7 @@ class TrackEmoji(Enum):
     @property
     def track_id(self) -> int:
         return self.value
-    
+
     def is_usable(self):
         return self.emoji is not None and self.emoji.is_usable()
 
@@ -355,7 +355,39 @@ class TrackEmoji(Enum):
         78,
         1083984608414150717
     )
-    BSIS = (
+    BSSY = (
         79,
         1083984740828327956
+    )
+    BADA = (
+        80,
+        1128798438998421524
+    )
+    BDC = (
+        81,
+        1128798431985545267
+    )
+    BMH = (
+        82,
+        1128798453217103912
+    )
+    BSCS = (
+        83,
+        1128798434401452112
+    )
+    BLAL = (
+        84,
+        1128798442370637954
+    )
+    BSW = (
+        85,
+        1128798428093218919
+    )
+    BKC = (
+        86,
+        1128798448926347294
+    )
+    BVV = (
+        87,
+        1128798445013045328
     )
