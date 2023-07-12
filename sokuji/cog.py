@@ -1,4 +1,5 @@
 from typing import Union, Optional
+import re
 from discord.abc import Messageable
 from discord import (
     Member,
@@ -652,7 +653,10 @@ class SokujiCog(commands.Cog, name='Sokuji'):
         sm = await SokujiMessage.fetched(ctx)
         if not members:
             members = {ctx.author}
-        new_banner_users = {f'{member.name}{member.discriminator}' for member in members}
+        def toStr(member: Member) -> str:
+            name = member.name if member.discriminator == '0' else f'{member.name}{member.discriminator}'
+            return re.sub(r'[.$#\[\]/]', ' ', name)
+        new_banner_users = set(map(toStr, members))
         sm.sokuji.banner_users |= new_banner_users
         if sm.sokuji.lang == Lang.JA:
             embed = ColoredEmbed(
@@ -662,7 +666,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             )
             for user in new_banner_users:
                 embed.add_field(
-                    name=f'{user[:-4]} さん用 更新開始',
+                    name=f'{user} さん用 更新開始',
                     value=f'https://sheat-git.github.io/sokuji/?user={user}'
                 )
         else:
