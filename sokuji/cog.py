@@ -1,5 +1,6 @@
 from typing import Union, Optional
 import re
+from urllib.parse import quote
 from discord.abc import Messageable
 from discord import (
     Member,
@@ -678,7 +679,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             for user in new_banner_users:
                 embed.add_field(
                     name=f'Start updating for {user[:-4]}',
-                    value=f'https://sheat-git.github.io/sokuji/?user={user}'
+                    value=f'https://sheat-git.github.io/sokuji/?user={quote(user)}'
                 )
         embed.set_footer(text='Design: © GungeeSpla')
         await sm.edit_sokuji()
