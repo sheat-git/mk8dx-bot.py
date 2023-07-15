@@ -668,7 +668,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             for user in new_banner_users:
                 embed.add_field(
                     name=f'{user} さん用 更新開始',
-                    value=f'https://sheat-git.github.io/sokuji/?user={user}'
+                    value=f'https://sheat-git.github.io/sokuji/?user={quote(user)}'
                 )
         else:
             embed = ColoredEmbed(
@@ -678,7 +678,7 @@ class SokujiCog(commands.Cog, name='Sokuji'):
             )
             for user in new_banner_users:
                 embed.add_field(
-                    name=f'Start updating for {user[:-4]}',
+                    name=f'Start updating for {user}',
                     value=f'https://sheat-git.github.io/sokuji/?user={quote(user)}'
                 )
         embed.set_footer(text='Design: © GungeeSpla')
