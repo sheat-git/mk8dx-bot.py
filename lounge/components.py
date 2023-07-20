@@ -139,6 +139,7 @@ class Span:
         self.min: int = min
         self.color: str = '#' + format(color.value, 'x')
 
+latest_season = 0
 
 class SeasonDivision(Enum):
 
@@ -151,6 +152,8 @@ class SeasonDivision(Enum):
     def __new__(cls: type[SeasonDivision], season: int, *_) -> RankDivision:
         obj = object.__new__(cls)
         obj._value_ = season
+        global latest_season
+        latest_season = season
         return obj
 
     def __init__(
@@ -163,6 +166,10 @@ class SeasonDivision(Enum):
         self.spans: list[Span] = [Span(max=rank[i-1], min=rank[i], color=divisions[i].color) for i in range(len(rank)-1, 0, -1)]
         self.lines: list[int] = level
         self.top_color: str = '#' + format(divisions[0].color.value, 'x')
+
+    @staticmethod
+    def get(season: int) -> SeasonDivision:
+        return SeasonDivision(min(season, latest_season))
 
     S4 = (
         4,
@@ -186,6 +193,11 @@ class SeasonDivision(Enum):
     )
     S8 = (
         8,
+        [17000, 16000, 14000, 12000, 10000, 8000, 6000, 4000, 2000, 0],
+        [15000, 13000, 11000, 9000, 7000, 5000, 3000, 1000]
+    )
+    S9 = (
+        9,
         [17000, 16000, 14000, 12000, 10000, 8000, 6000, 4000, 2000, 0],
         [15000, 13000, 11000, 9000, 7000, 5000, 3000, 1000]
     )

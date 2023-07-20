@@ -10,7 +10,7 @@ from .stats import make_content
 from mk8dx import lounge_api
 
 
-NOW_SEASON = 8
+NOW_SEASON = 9
 
 _DISCORD_ID_RE = re.compile(r'<@.?[0-9]*?>')
 _INT_RE = re.compile(r'[0-9]+')
@@ -123,14 +123,15 @@ class LoungeCog(commands.Cog, name='Lounge'):
         )
         if not players:
             return
+        if len(players) == 1:
+            await ctx.send(players[0].switch_fc)
+            return
         if len(players) > 25:
             await ctx.send('There are too many args. The upper limit is 25. I will show only 25 players.')
             players = players[:25]
         embed = ColoredEmbed(
-            title='Switch FC'
+            title='Switch FCs'
         )
-        if len(players) > 1:
-            embed.title += 's'
         for player in players:
             embed.add_field(
                 name=player.name,

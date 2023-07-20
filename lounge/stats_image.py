@@ -20,7 +20,7 @@ def make(mmrs: list[list[int]], season: int) -> File:
     ax.grid(color='w', ls=':', dash_capstyle='round')
     ax.set_axisbelow(False)
     try:
-        division = SeasonDivision(season)
+        division = SeasonDivision.get(season)
         ax.plot(xdata, ydata, color='black', lw=9, solid_capstyle='round', alpha=0.3)
         min_ylim, max_ylim = ax.get_ylim()
         ax.set_facecolor(division.top_color)
