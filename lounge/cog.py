@@ -10,7 +10,7 @@ from .stats import make_content
 from mk8dx import lounge_api
 
 
-NOW_SEASON = 9
+NOW_SEASON = 10
 
 _DISCORD_ID_RE = re.compile(r'<@.?[0-9]*?>')
 _INT_RE = re.compile(r'[0-9]+')
