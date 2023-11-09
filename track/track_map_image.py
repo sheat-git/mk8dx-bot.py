@@ -1,6 +1,9 @@
 from PIL import Image
 import requests
 import io
+import os
+
+os.makedirs('track/images/tracks', exist_ok=True)
 
 def concat(im1, im2):
     if im1.height == im2.height:
